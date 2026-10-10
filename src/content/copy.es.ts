@@ -6,6 +6,34 @@ export const copy = {
     primary: 'Empezar gratis',
     secondary: 'Pedir demo',
     note: 'Crear la cuenta no pide tarjeta.',
+    highlight: 'fácil',
+    howLink: 'Ver cómo funciona',
+  },
+  heroTrust: [
+    { title: 'Seguro', body: 'RNC y cédula cifrados' },
+    { title: 'Rápido', body: 'Cobra en segundos' },
+    { title: 'En la nube', body: 'Desde el celular o la caja' },
+    { title: 'Hecho en RD', body: 'Soporte en Santo Domingo' },
+  ],
+  /** Illustrative numbers for the hero preview. Labelled on screen as an example, never as customer data. */
+  heroPreview: {
+    caption: 'Vista de ejemplo',
+    sales: { label: 'Ventas hoy', value: 18450, delta: '+12% vs. ayer' },
+    stock: {
+      label: 'Inventario',
+      note: '3 productos por agotarse',
+      items: [
+        { name: 'Arroz 5 lb', qty: 4, pct: 18 },
+        { name: 'Aceite 1 L', qty: 6, pct: 30 },
+        { name: 'Café 1 lb', qty: 9, pct: 45 },
+      ],
+    },
+    invoice: { label: 'Facturación', number: 'Factura 0142', status: 'Pagada', total: 3275 },
+  },
+  pillarsIntro: {
+    eyebrow: 'Producto',
+    lead: 'Tres módulos que ya están en el panel, pensados para el ritmo de un negocio dominicano.',
+    link: 'Ver todo el producto',
   },
   pillars: [
     {
@@ -23,6 +51,7 @@ export const copy = {
   ],
   how: {
     id: 'como-funciona',
+    eyebrow: 'Paso a paso',
     title: 'Cómo funciona',
     lead: 'Cuatro pasos. Sin manual de cien páginas.',
     steps: [
