@@ -1,32 +1,69 @@
-/* Base tokens and primitives shared with the Facilito panel (apps/web/src/app/globals.css in the monorepo). */
+/* Design tokens and primitives. Colors match the Facilito panel (apps/web/src/app/globals.css in the monorepo). */
 
 :root {
+  /* Color */
   --green: #0d855b;
   --green-600: #0b7a53;
   --green-700: #086444;
+  --green-800: #064d35;
   --green-50: #e8f5ef;
   --green-100: #d3ede1;
   --orange: #f5871f;
   --orange-600: #e0740f;
   --orange-50: #fff3e6;
-  --red: #d64545;
+  --red: #c93c3c;
   --red-50: #fdecec;
   --ink: #15233a;
   --ink-2: #3a4a61;
-  --muted: #5f6d82;
-  --line: #e6ecef;
+  --muted: #5a687d;
+  --line: #e3e9ed;
   --line-2: #eef2f4;
   --bg: #f4f7f6;
   --card: #ffffff;
-  --radius: 16px;
+  --sky: #58b7f6;
+  --sky-50: #eaf6fd;
+
+  /* Spacing: 4/8 scale */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Radius and elevation */
   --radius-sm: 10px;
+  --radius: 16px;
   --radius-lg: 22px;
-  --shadow-sm: 0 1px 2px rgba(16, 40, 32, 0.05);
-  --shadow: 0 6px 24px rgba(16, 52, 40, 0.07);
-  --shadow-lg: 0 18px 50px rgba(10, 45, 32, 0.16);
-  --header-h: 72px;
-  --focus: 0 0 0 3px rgba(14, 138, 95, 0.28);
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+  --shadow-sm: 0 1px 2px rgb(16 40 32 / 0.06);
+  --shadow: 0 8px 28px rgb(21 35 58 / 0.08);
+  --shadow-lg: 0 24px 60px rgb(21 35 58 / 0.18);
+  --focus: 0 0 0 3px rgb(13 133 91 / 0.35);
+
+  /* Motion: transform/opacity only */
+  --dur-1: 150ms;
+  --dur-2: 250ms;
+  --dur-3: 400ms;
+  --dur-4: 800ms;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  --header-h: 64px;
   --font: var(--font-sans), 'Poppins', 'Segoe UI', system-ui, -apple-system, sans-serif;
+
+  color-scheme: light;
+  scrollbar-color: #b9c6c1 transparent;
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --header-h: 72px;
+  }
 }
 
 *,
@@ -37,6 +74,14 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--header-h) + 16px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 html,
@@ -48,12 +93,12 @@ body {
 
 body {
   font-family: var(--font);
-  font-size: 15px;
-  line-height: 1.5;
+  font-size: 16px;
+  line-height: 1.55;
   color: var(--ink);
-  background: var(--bg);
+  background: #fff;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 h1,
@@ -61,24 +106,24 @@ h2,
 h3,
 h4 {
   margin: 0;
-  line-height: 1.25;
+  line-height: 1.2;
   font-weight: 600;
+  text-wrap: balance;
 }
 
 p {
   margin: 0;
+  text-wrap: pretty;
 }
 
 a {
-  color: var(--green-600);
+  color: var(--green-700);
   text-decoration: none;
 }
 
-a:hover {
-  text-decoration: underline;
-}
-
-img {
+img,
+svg,
+video {
   max-width: 100%;
 }
 
@@ -95,6 +140,26 @@ textarea {
   box-shadow: var(--focus);
 }
 
+::selection {
+  background: var(--green-100);
+  color: var(--ink);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #b9c6c1;
+  border-radius: var(--radius-pill);
+  border: 2px solid #fff;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -108,18 +173,19 @@ textarea {
 }
 
 .skip-link {
-  position: absolute;
+  position: fixed;
   left: 12px;
-  top: -60px;
+  top: -80px;
   z-index: 100;
-  background: var(--green);
+  background: var(--green-700);
   color: #fff;
   padding: 10px 16px;
   border-radius: var(--radius-sm);
+  font-weight: 600;
 }
 
 .skip-link:focus {
-  top: 12px;
+  top: calc(12px + env(safe-area-inset-top));
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -133,21 +199,29 @@ textarea {
   }
 }
 
+/* Button */
 .btn {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 44px;
-  padding: 0 18px;
-  border-radius: 12px;
+  min-height: 48px;
+  padding: 0 22px;
+  border-radius: var(--radius-pill);
   border: 1px solid transparent;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.97rem;
+  line-height: 1.2;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s, border-color 0.15s, box-shadow 0.15s, transform 0.12s ease-out;
-  text-decoration: none !important;
+  text-decoration: none;
+  transition:
+    transform var(--dur-1) var(--ease),
+    box-shadow var(--dur-2) var(--ease),
+    background-color var(--dur-2) var(--ease),
+    border-color var(--dur-2) var(--ease),
+    color var(--dur-2) var(--ease);
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -155,29 +229,28 @@ textarea {
   transform: scale(0.97);
 }
 
-.btn:disabled {
-  opacity: 0.55;
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  opacity: 0.6;
   cursor: not-allowed;
+}
+
+.btn-sm {
+  min-height: 44px;
+  padding: 0 18px;
+  font-size: 0.92rem;
 }
 
 .btn-primary {
   background: var(--green);
   color: #fff;
-  box-shadow: 0 6px 16px rgba(14, 138, 95, 0.25);
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: var(--green-600);
+  box-shadow: 0 8px 20px rgb(13 133 91 / 0.28);
 }
 
 .btn-accent {
   background: var(--orange);
-  color: #fff;
-  box-shadow: 0 6px 16px rgba(245, 135, 31, 0.25);
-}
-
-.btn-accent:hover:not(:disabled) {
-  background: var(--orange-600);
+  color: var(--ink);
+  box-shadow: 0 8px 20px rgb(245 135 31 / 0.26);
 }
 
 .btn-outline {
@@ -186,61 +259,113 @@ textarea {
   color: var(--ink);
 }
 
-.btn-outline:hover:not(:disabled) {
-  border-color: var(--green);
-  color: var(--green-600);
-}
-
 .btn-ghost {
   background: transparent;
   color: var(--ink-2);
 }
 
-.btn-ghost:hover:not(:disabled) {
-  background: var(--line-2);
+.btn-light {
+  background: #fff;
+  color: var(--ink);
+  box-shadow: 0 8px 20px rgb(4 20 14 / 0.18);
+}
+
+.btn-glass {
+  background: rgb(255 255 255 / 0.12);
+  border-color: rgb(255 255 255 / 0.4);
+  color: #fff;
+  backdrop-filter: blur(8px);
+}
+
+@media (hover: hover) {
+  .btn-primary:hover:not(:disabled) {
+    background: var(--green-600);
+    transform: translateY(-1px);
+    box-shadow: 0 12px 26px rgb(13 133 91 / 0.34);
+  }
+
+  .btn-accent:hover:not(:disabled) {
+    background: var(--orange-600);
+    transform: translateY(-1px);
+  }
+
+  .btn-outline:hover:not(:disabled) {
+    border-color: var(--green);
+    color: var(--green-700);
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    background: var(--line-2);
+  }
+
+  .btn-light:hover:not(:disabled) {
+    background: var(--sky-50);
+    transform: translateY(-1px);
+  }
+
+  .btn-glass:hover:not(:disabled) {
+    background: rgb(255 255 255 / 0.22);
+  }
 }
 
 .icon-btn {
   display: inline-grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
   border: none;
   background: transparent;
-  color: var(--ink-2);
+  color: inherit;
   cursor: pointer;
   flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.icon-btn:hover:not(:disabled) {
-  background: var(--line-2);
-  color: var(--ink);
+@media (hover: hover) {
+  .icon-btn:hover {
+    background: rgb(21 35 58 / 0.06);
+  }
 }
 
+/* Logo: mark + solid green wordmark, same as the app icon */
 .logo {
   display: inline-flex;
   align-items: center;
   gap: 10px;
+  color: var(--green-700);
 }
 
 .logo-mark {
+  display: block;
   object-fit: contain;
   flex-shrink: 0;
 }
 
 .logo-text {
-  display: flex;
-  flex-direction: column;
+  display: grid;
   line-height: 1;
 }
 
 .logo-word {
   font-weight: 700;
-  font-size: 1.5rem;
+  font-size: var(--logo-size, 1.45rem);
   letter-spacing: -0.02em;
-  background: linear-gradient(90deg, var(--green) 0 62%, var(--orange) 62% 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: currentColor;
+}
+
+.logo-byline {
+  margin-top: 4px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--muted);
+}
+
+.logo[data-tone='light'] {
+  color: #fff;
+}
+
+.logo[data-tone='light'] .logo-byline {
+  color: rgb(255 255 255 / 0.72);
 }

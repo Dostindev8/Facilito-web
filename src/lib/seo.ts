@@ -1,5 +1,20 @@
 import type { Metadata } from 'next';
-import { absoluteUrl, site, siteUrl } from './site';
+import { absoluteUrl, isIndexable, site, siteUrl } from './site';
+
+export function robotsMeta(): Metadata['robots'] {
+  return isIndexable() ? { index: true, follow: true } : { index: false, follow: false };
+}
+
+export function websiteJsonLd(): Record<string, unknown> {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: site.name,
+    url: siteUrl().toString(),
+    inLanguage: site.lang,
+    publisher: { '@type': 'Organization', name: site.legalName },
+  };
+}
 
 export function pageMeta(input: { title: string; description: string; path: string }): Metadata {
   const url = absoluteUrl(input.path);
@@ -20,7 +35,7 @@ export function pageMeta(input: { title: string; description: string; path: stri
       title: input.title,
       description: input.description,
     },
-    robots: { index: true, follow: true },
+    robots: robotsMeta(),
   };
 }
 

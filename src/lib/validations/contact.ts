@@ -4,6 +4,9 @@ import { BUSINESS_TYPES, CONTACT_LIMITS, CONTACT_MOTIVES } from './contact-field
 
 export * from './contact-fields';
 
+// The schema also runs in the browser. JIT compilation probes `new Function`, which the strict CSP blocks.
+z.config({ jitless: true });
+
 export const contactSchema = z
   .object({
     nombre: z.string().trim().min(2, 'Escribe tu nombre.').max(CONTACT_LIMITS.name, 'El nombre es demasiado largo.'),
@@ -31,6 +34,13 @@ export type ContactParse =
   | { ok: true; message: ContactMessage }
   | { ok: false; honeypot: true }
   | { ok: false; honeypot: false; fieldErrors: Record<string, string> };
+
+/** First message per field, for inline errors in the form. Ignores the honeypot. */
+export function contactFieldErrors(raw: unknown): Record<string, string> {
+  const parsed = parseContact(raw);
+  if (parsed.ok || parsed.honeypot) return {};
+  return parsed.fieldErrors;
+}
 
 export function parseContact(raw: unknown): ContactParse {
   const parsed = contactSchema.safeParse(raw);

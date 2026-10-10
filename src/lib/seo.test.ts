@@ -1,6 +1,26 @@
-import { describe, expect, it } from 'vitest';
-import { absoluteUrl, siteUrl } from './site';
-import { breadcrumbJsonLd, softwareJsonLd } from './seo';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { absoluteUrl, isIndexable, siteUrl } from './site';
+import { breadcrumbJsonLd, robotsMeta, softwareJsonLd, websiteJsonLd } from './seo';
+
+describe('indexación', () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it('preview de Vercel lleva noindex', () => {
+    vi.stubEnv('VERCEL_ENV', 'preview');
+    expect(isIndexable()).toBe(false);
+    expect(robotsMeta()).toEqual({ index: false, follow: false });
+  });
+
+  it('producción de Vercel se indexa', () => {
+    vi.stubEnv('VERCEL_ENV', 'production');
+    expect(isIndexable()).toBe(true);
+    expect(robotsMeta()).toEqual({ index: true, follow: true });
+  });
+
+  it('declara el WebSite', () => {
+    expect(websiteJsonLd()['@type']).toBe('WebSite');
+  });
+});
 
 describe('seo helpers', () => {
   it('arma URL absoluta sin doble barra', () => {

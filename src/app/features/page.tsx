@@ -1,5 +1,7 @@
+import { BarChart3, ClipboardList, Package, Receipt, Truck, Users } from 'lucide-react';
 import { comingSoon, features } from '@/content/features';
 import { JsonLd } from '@/components/marketing/json-ld';
+import { PageHero } from '@/components/marketing/page-hero';
 import { RegisterCta } from '@/components/marketing/whatsapp-button';
 import { breadcrumbJsonLd, pageMeta } from '@/lib/seo';
 
@@ -9,39 +11,65 @@ export const metadata = pageMeta({
   path: '/features',
 });
 
+const ICONS: Record<string, typeof Receipt> = {
+  ventas: Receipt,
+  inventario: Package,
+  facturacion: ClipboardList,
+  clientes: Users,
+  proveedores: Truck,
+  reportes: BarChart3,
+};
+
 export default function FeaturesPage() {
   return (
-    <div className="mkt-wrap mkt-page-head" style={{ paddingBottom: 72 }}>
+    <>
       <JsonLd
         data={breadcrumbJsonLd([
           { name: 'Inicio', path: '/' },
           { name: 'Producto', path: '/features' },
         ])}
       />
-      <h1>Producto</h1>
-      <p>Cada bloque es un módulo que ya está en el panel. Lo que no está, no se vende como si estuviera.</p>
-      {features.map((feature) => (
-        <article key={feature.id} className="mkt-feature" id={feature.id}>
-          <h2>{feature.title}</h2>
-          <p>
-            <strong>El problema. </strong>
-            {feature.problem}
-          </p>
-          <p>
-            <strong>Con Facilito. </strong>
-            {feature.solution}
-          </p>
-          <RegisterCta>Empezar gratis</RegisterCta>
-        </article>
-      ))}
-      <h2 style={{ marginTop: 36 }}>Próximamente</h2>
-      <ul>
-        {comingSoon.map((item) => (
-          <li key={item}>
-            <span className="mkt-soon">Próximamente</span> {item}
-          </li>
-        ))}
-      </ul>
-    </div>
+      <PageHero
+        eyebrow="Producto"
+        title="Producto"
+        lead="Cada bloque es un módulo que ya está en el panel. Lo que no está, no se vende como si estuviera."
+      />
+      <section className="mkt-section mkt-section-tight" aria-label="Módulos">
+        <div className="mkt-wrap">
+          <div className="mkt-features">
+            {features.map((feature, index) => {
+              const Icon = ICONS[feature.id] ?? Receipt;
+              return (
+                <article key={feature.id} className="mkt-feature" id={feature.id} data-reveal style={{ ['--reveal-i' as string]: index % 2 }}>
+                  <div className="mkt-icon">
+                    <Icon size={22} aria-hidden />
+                  </div>
+                  <h2>{feature.title}</h2>
+                  <p>
+                    <strong>El problema. </strong>
+                    {feature.problem}
+                  </p>
+                  <p>
+                    <strong>Con Facilito. </strong>
+                    {feature.solution}
+                  </p>
+                  <RegisterCta>Empezar gratis</RegisterCta>
+                </article>
+              );
+            })}
+          </div>
+          <div className="mkt-soon-box" data-reveal>
+            <h2>Próximamente</h2>
+            <ul>
+              {comingSoon.map((item) => (
+                <li key={item}>
+                  <span className="mkt-soon">Próximamente</span> {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }

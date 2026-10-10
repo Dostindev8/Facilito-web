@@ -42,6 +42,16 @@ function appUrl(): string {
   return trimSlash(process.env.NEXT_PUBLIC_APP_URL || 'https://facilitord.vercel.app');
 }
 
+/**
+ * Only the production deployment may be indexed. Vercel preview/development builds set
+ * VERCEL_ENV to something else; outside Vercel, production builds are indexable.
+ */
+export function isIndexable(): boolean {
+  const vercelEnv = process.env.VERCEL_ENV;
+  if (vercelEnv) return vercelEnv === 'production';
+  return process.env.NODE_ENV === 'production';
+}
+
 export function absoluteUrl(path: string): string {
   const base = siteUrl().toString().replace(/\/$/, '');
   return `${base}${path.startsWith('/') ? path : `/${path}`}`;

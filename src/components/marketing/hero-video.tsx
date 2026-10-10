@@ -2,48 +2,25 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-const HERO_POSTER = '/media/facilito-hero-poster.webp';
+import { HERO_POSTER } from '@/lib/hero-media-shared';
 
-type Conn = { saveData?: boolean; effectiveType?: string };
+const FADE_MS = 800;
 
-const FADE_MS = 900;
-
-export function HeroVideo({ videoReady }: { videoReady: boolean }) {
+/** Poster is the LCP image. The loop only mounts when encoded files exist and the visitor can afford motion. */
+export function HeroVideo({ videoReady, allowMotion, paused }: { videoReady: boolean; allowMotion: boolean; paused: boolean }) {
   const ref = useRef<HTMLVideoElement>(null);
-  const [enabled, setEnabled] = useState(false);
   const [playing, setPlaying] = useState(false);
-
-  useEffect(() => {
-    if (!videoReady) return;
-    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const connection = (navigator as Navigator & { connection?: Conn }).connection;
-    const slow = connection?.saveData === true || /(^|-)2g$/.test(connection?.effectiveType ?? '');
-    if (!reduce && !slow) setEnabled(true);
-  }, [videoReady]);
+  const enabled = videoReady && allowMotion;
 
   useEffect(() => {
     const video = ref.current;
     if (!enabled || !video) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry?.isIntersecting) video.play().catch(() => setPlaying(false));
-        else video.pause();
-      },
-      { threshold: 0.1 },
-    );
-    observer.observe(video);
-    const onVisibility = () => {
-      if (document.hidden) video.pause();
-    };
-    document.addEventListener('visibilitychange', onVisibility);
-    return () => {
-      observer.disconnect();
-      document.removeEventListener('visibilitychange', onVisibility);
-    };
-  }, [enabled]);
+    if (paused) video.pause();
+    else video.play().catch(() => setPlaying(false));
+  }, [enabled, paused]);
 
   return (
-    <div className="mkt-hero-fill" aria-hidden="true">
+    <div className="mkt-hero-fill">
       <Image src={HERO_POSTER} alt="" fill priority unoptimized sizes="100vw" className="mkt-hero-poster" />
       {enabled && (
         <video
@@ -55,14 +32,14 @@ export function HeroVideo({ videoReady }: { videoReady: boolean }) {
           onPlaying={() => setPlaying(true)}
           onError={() => setPlaying(false)}
           className="mkt-hero-video"
-          style={{ opacity: playing ? 1 : 0, transition: `opacity ${FADE_MS}ms cubic-bezier(0.16, 1, 0.3, 1)` }}
+          style={{ opacity: playing ? 1 : 0, transition: `opacity ${FADE_MS}ms cubic-bezier(0.2, 0.8, 0.2, 1)` }}
         >
-          <source src="/media/facilito-hero-1080-loop.webm" type="video/webm" />
+          <source src="/media/facilito-hero-1080-loop.webm" type="video/webm" media="(min-width: 1024px)" />
           <source src="/media/facilito-hero-1080-loop.mp4" type="video/mp4" media="(min-width: 1024px)" />
+          <source src="/media/facilito-hero-720-loop.webm" type="video/webm" />
           <source src="/media/facilito-hero-720-loop.mp4" type="video/mp4" />
         </video>
       )}
-      <div className="mkt-hero-scrim" />
     </div>
   );
 }

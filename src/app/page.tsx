@@ -5,11 +5,11 @@ import { HowItWorks } from '@/components/marketing/how-it-works';
 import { JsonLd } from '@/components/marketing/json-ld';
 import { Manifesto, TrustStrip } from '@/components/marketing/trust-strip';
 import { Pillars } from '@/components/marketing/pillars';
-import { organizationJsonLd, pageMeta, softwareJsonLd } from '@/lib/seo';
+import { organizationJsonLd, pageMeta, softwareJsonLd, websiteJsonLd } from '@/lib/seo';
 import { HERO_POSTER, heroVideoAvailable } from '@/lib/hero-media';
 import { site } from '@/lib/site';
 
-const title = `${site.name} — ${site.tagline}`;
+const title = `${site.name} - ${site.tagline}`;
 
 export const metadata = {
   ...pageMeta({
@@ -24,6 +24,7 @@ export default function HomePage() {
   preload(HERO_POSTER, { as: 'image', fetchPriority: 'high' });
   return (
     <>
+      <JsonLd data={websiteJsonLd()} />
       <JsonLd data={organizationJsonLd()} />
       <JsonLd data={softwareJsonLd()} />
       <Hero videoReady={heroVideoAvailable()} />

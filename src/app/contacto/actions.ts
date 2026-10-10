@@ -2,16 +2,33 @@
 
 import { headers } from 'next/headers';
 import { createContactNotifier } from '@/lib/contact-notifier';
-import { hitRateLimit } from '@/lib/rate-limit';
+import { hitRateLimit, ipKey } from '@/lib/rate-limit';
 import { parseContact, type ContactFormState } from '@/lib/validations/contact';
+
+/** Upper bound for the whole submission; the schema enforces per-field limits. */
+const MAX_FORM_BYTES = 8 * 1024;
 
 async function clientKey(): Promise<string> {
   const h = await headers();
+  // On Vercel the platform overwrites x-forwarded-for; the first hop is the client.
   const forwarded = h.get('x-forwarded-for')?.split(',')[0]?.trim();
-  return forwarded || h.get('x-real-ip') || 'local';
+  return ipKey(h.get('x-real-ip') || forwarded || 'local');
+}
+
+function formBytes(formData: FormData): number {
+  let total = 0;
+  for (const [key, value] of formData.entries()) {
+    if (typeof value !== 'string') return Number.POSITIVE_INFINITY;
+    total += key.length + value.length;
+  }
+  return total;
 }
 
 export async function submitContact(_prev: ContactFormState, formData: FormData): Promise<ContactFormState> {
+  if (formBytes(formData) > MAX_FORM_BYTES) {
+    return { status: 'error', message: 'El mensaje es demasiado largo.', fieldErrors: {} };
+  }
+
   const raw = {
     nombre: formData.get('nombre'),
     telefono: formData.get('telefono'),
@@ -31,7 +48,7 @@ export async function submitContact(_prev: ContactFormState, formData: FormData)
     return { status: 'error', message: first, fieldErrors: parsed.fieldErrors };
   }
 
-  const limit = hitRateLimit(`contact:${await clientKey()}`);
+  const limit = await hitRateLimit(`contact:${await clientKey()}`);
   if (!limit.ok) {
     return {
       status: 'error',
