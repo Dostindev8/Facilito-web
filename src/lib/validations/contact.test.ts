@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseContact } from './contact';
+import { contactFieldErrors, parseContact } from './contact';
 
 const valid = {
   nombre: 'María Pérez',
@@ -36,5 +36,23 @@ describe('parseContact', () => {
     const result = parseContact({ ...valid, telefono: '5551234567' });
     expect(result.ok).toBe(false);
     if (!result.ok && !result.honeypot) expect(result.fieldErrors.telefono).toMatch(/809/);
+  });
+
+  it('rechaza valores que no son texto (FormData con archivos)', () => {
+    expect(parseContact({ ...valid, mensaje: 42 }).ok).toBe(false);
+    expect(parseContact({ ...valid, nombre: null }).ok).toBe(false);
+  });
+});
+
+describe('contactFieldErrors (validación del formulario en el navegador)', () => {
+  it('devuelve un mensaje por campo, en español', () => {
+    const errors = contactFieldErrors({ ...valid, nombre: '', email: 'no-es-correo' });
+    expect(errors.nombre).toBe('Escribe tu nombre.');
+    expect(errors.email).toBe('Escribe un correo válido.');
+  });
+
+  it('vacío cuando el envío es válido o es el honeypot', () => {
+    expect(contactFieldErrors(valid)).toEqual({});
+    expect(contactFieldErrors({ ...valid, company_website: 'x' })).toEqual({});
   });
 });

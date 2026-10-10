@@ -1,4 +1,4 @@
-// Client-safe: must not import zod (its eval probe trips the strict CSP in the browser).
+// Constants and form state shared by the server action and the client form.
 export const BUSINESS_TYPES = ['colmado', 'ferreteria', 'farmacia', 'salon', 'restaurante', 'boutique', 'servicios', 'otro'] as const;
 export const CONTACT_MOTIVES = ['demo', 'ventas', 'soporte'] as const;
 
