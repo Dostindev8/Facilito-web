@@ -1,21 +1,28 @@
 # Decisiones — sitio público Facilito
 
-1. El código vive en el monorepo `Projects2/Facilito` (`apps/web`), no en el workspace vacío `Facilito-web`.
-2. Next se queda en 15.5.27. La subida a 16.4.0 (última en npm el 7 oct 2026) queda aparte, antes del 21 oct 2026.
-3. Sin Tailwind: el marketing usa `marketing.css` bajo `.mkt` y los tokens ya existentes (`--green`, `--ink`, `--orange`).
-4. Tipografía del sitio: Poppins, ya self-hosted en el layout raíz. No se suman Plus Jakarta ni Inter para no cargar una tercera y cuarta familia en cada página.
-5. `/` deja de redirigir a `/inicio`. El panel sigue en `/inicio`. `/register` redirige a `/login?tab=registro` (el registro real). `/modulos` redirige 308 a `/features`.
-6. Las páginas de marketing no leen la cookie de sesión en el servidor. Siguen dinámicas porque el layout raíz llama `headers()` para el nonce de CSP. No se quitó: rompería la CSP del panel.
-7. El header usa `useAuth()` solo después de montar, para no desalinear el HTML del servidor.
-8. CSP sigue en enforce, la que ya define `middleware.ts`. No se duplicó una CSP Report-Only encima. `media/` queda fuera del matcher para no pasar el video por el middleware.
-9. Sin analítica. El aviso de cookies no enciende ningún script. La única cookie de producto es `fc_rt` tras el login.
-10. Formulario de contacto: zod en el servidor, honeypot, límite en memoria (5 cada 10 min por IP, no compartido entre instancias). SMTP con nodemailer si hay `SMTP_*`; si no, falla cerrado. `CONTACT_DELIVERY=sink` solo para pruebas.
-11. La IP del límite sale de `x-forwarded-for`. Con `TRUST_PROXY=0` un cliente puede falsearla. No es el control principal.
-12. Precios de referencia (0 / 16 / 39 USD) visibles como no vigentes. No hay oferta anual.
-13. e-CF se dice «próximamente». Google se dice no disponible.
-14. Stagger del titular en CSS (solo `transform`) para no esconder el texto ni romper la hidratación. Parallax con `motion` después del mount. Lenis solo en el layout de marketing y no se crea si `prefers-reduced-motion`.
-15. El video no se sirve: no está el mp4 fuente ni ffmpeg. `HeroVideo` queda listo y solo monta `<video>` si existen los loops en `public/media`.
-16. Contraste del hero: velo navy al 0,72–0,84 sobre el cielo más claro muestreado (rgb 244,250,255) deja el blanco por encima de 4,5:1. El botón naranja del marketing usa texto navy porque el blanco sobre `#f5871f` medía 2,5:1.
-17. Enlaces a `/register` y `/login` con `prefetch={false}`: en `next start` local la CSP de producción (`upgrade-insecure-requests`) convierte el prefetch en `https://127.0.0.1` y ensucia la consola.
-18. zod no llega al navegador. Constantes y tipos que usa el formulario viven en `lib/validations/contact-fields.ts` (sin zod). zod 4 prueba `new Function` al cargar y eso dispara una violación de `script-src` en la CSP estricta.
-19. Metadatos en streaming (comportamiento por defecto de Next 15). Con `htmlLimitedBots: /.*/` Lighthouse SEO subía de 92 a 100, pero el LCP simulado empeoraba ~1,2 s en todas las rutas (home de 91 a 84). Se revirtió. Los bots sociales (`facebookexternalhit`, etc.) reciben `<meta name="description">` en el `<head>`; Googlebot ejecuta JS y lee los metadatos transmitidos.
+1. El sitio vive en este repo (`Facilito-web`) como app Next independiente. Salió del monorepo `Facilito` (`apps/web`); la app (login, panel, API) sigue allá y se publica en `https://facilitord.vercel.app`.
+2. Next se queda en 15.5.27. La subida a 16 queda aparte, antes del fin de soporte de la línea 15 (21 oct 2026).
+3. Sin Tailwind ni shadcn: `globals.css` define los tokens (color, espacio, radios, sombras, motion 150/250/400/800 ms con `cubic-bezier(.2,.8,.2,1)`) y `marketing.css` los componentes bajo `.mkt`. Breakpoints 375 → 640 → 768 → 1024 → 1280 → 1536, mobile-first.
+4. Tipografía: Poppins self-hosted con `next/font`, `display: optional` y precarga. Con `swap` el cambio de fuente movía un párrafo de `/nosotros` (CLS 0,118 en móvil con throttling); con `optional` el CLS es 0 y, si la fuente no llega en ~100 ms, esa vista usa el fallback ajustado.
+5. «Empezar gratis» lleva a `${NEXT_PUBLIC_APP_URL}/login?tab=registro` e «Iniciar sesión» a `${NEXT_PUBLIC_APP_URL}/login`. `/login` y `/register` en este sitio redirigen a la app. `/modulos` redirige 308 a `/features`.
+6. Las páginas siguen dinámicas porque el layout llama `headers()` para el nonce de la CSP.
+7. Sin auth en el sitio: el header no consulta sesión.
+8. CSP en enforce con nonce (`middleware.ts`). `media/` fuera del matcher.
+9. Sin analítica. El aviso de cookies no enciende ningún script. Web Vitals se envían a `/api/vitals` (mismo origen, solo producción) y se registran en los logs; no hay cookies ni identificadores.
+10. Formulario de contacto: zod en cliente y servidor, honeypot, cuerpo máximo de 8 KB (y 32 KB en Server Actions), sin doble envío. Límite de 5 envíos cada 10 min por IP; IPv6 se agrupa por /64. Con `UPSTASH_REDIS_REST_*` el límite es compartido; si Upstash falla o no está configurado, cae a un mapa en memoria por instancia. SMTP con nodemailer; sin SMTP falla cerrado. `CONTACT_DELIVERY=sink` solo para pruebas.
+11. La IP sale de `x-real-ip` o del primer valor de `x-forwarded-for` (los fija Vercel). Fuera de Vercel un cliente podría falsearla; el límite no es el único control.
+12. Precios de referencia (0 / 16 / 39 USD) visibles como no vigentes (`PRICES_CONFIRMED = false`). No hay oferta anual.
+13. e-CF ante la DGII se dice «próximamente».
+14. Animaciones solo con `transform`/`opacity`. El hero no oculta texto (el LCP es el párrafo del hero). Las secciones se revelan al hacer scroll solo si corre JS (`.js-reveal`); lo que ya está en pantalla al cargar se marca visible sin animar y hay un temporizador de seguridad de 2,5 s.
+15. Fondo vivo del hero: póster como LCP, video solo si existen los loops, pausa fuera de vista o con la pestaña oculta. Sin video ni partículas con `prefers-reduced-motion`, Save-Data o conexión 2g/3g. Nubes con ciclos de 90–140 s. Partículas (24) y parallax (24 px) solo en escritorio con puntero fino. El parallax es un listener de scroll pasivo con `requestAnimationFrame`; se quitó la librería `motion` (~47 kB) que solo hacía eso.
+16. Contraste del hero: velo navy 0,62–0,86 sobre el cielo más claro muestreado deja el blanco por encima de 4,5:1. El botón naranja usa texto navy (el blanco sobre `#f5871f` medía 2,5:1).
+17. `backdrop-filter` del header se apaga con el menú abierto: si no, el header pasa a ser el bloque contenedor de los `position: fixed` del menú y del fondo, y el clic afuera no cierra. El blur de las tarjetas de confianza del hero solo se aplica en escritorio: sobre el cielo animado se re-rasteriza en cada frame.
+18. zod en el cliente con `z.config({ jitless: true })`: zod 4 prueba `new Function` y eso viola `script-src` en la CSP estricta.
+19. Metadatos en streaming (comportamiento por defecto de Next 15). Medido de nuevo el 8 oct 2026: con `htmlLimitedBots: /.*/` Lighthouse SEO sube de 92 a 100, pero Performance móvil simulada baja de 91–96 a 78–88 en todas las rutas. Se mantiene el streaming. Googlebot ejecuta JS y lee los metadatos; los bots sociales (`facebookexternalhit`, `WhatsApp`, `Twitterbot`, `LinkedInBot`, `Slackbot`…) reciben `<meta name="description">` en el `<head>`.
+20. Sin `loading.tsx` global: envolvía cada página en un Suspense raíz, el primer HTML pintaba solo la barra de carga y el footer, y al llegar el contenido el footer se movía (CLS 0,45 en escritorio) y el LCP se retrasaba ~3 s. Las páginas no esperan datos, así que no hay nada que mostrar mientras tanto.
+21. Lenis solo en escritorio con puntero fino, cargado en idle. En táctil el scroll es nativo; `scroll-padding-top` compensa el header fijo en los anclas y `scroll-behavior: smooth` (con `data-scroll-behavior="smooth"` en `<html>`) da el desplazamiento suave.
+22. Un solo `<Logo />` (`variant` full/icon, `tone` brand/light) y un solo `Container` (`mkt-wrap`): el header, el hero y las secciones comparten el mismo borde izquierdo en todos los anchos (probado en e2e a 375, 1440 y 2560).
+23. Vista previa del hero en HTML (Ventas hoy, Inventario, Facturación) con datos de ejemplo rotulados «Vista de ejemplo». El contador corre una vez, del 60 % al valor final, escribiendo el texto directo (sin re-render de React por frame); el HTML del servidor ya trae el valor final.
+24. Contradicción de registro (sin resolver, no se tocó la lógica de producto): el sitio invita a «Empezar gratis», pero en el monorepo hay cambios sin publicar en la API que responden 410 `registration_closed` al registro. Si el registro se cierra, la propuesta es cambiar el CTA a «Pedir acceso» → `/contacto?motivo=acceso` (solo texto en `copy.es.ts` y `site.ts`). Decide producto.
+25. Textos de contacto: sin `NEXT_PUBLIC_WHATSAPP_E164` ni `NEXT_PUBLIC_CONTACT_EMAIL`, la página dice «Pronto publicamos…» en vez de mostrar el nombre de la variable de entorno.
+26. `postcss` forzado a ≥ 8.5.23 con `pnpm.overrides`: Next 15.5.27 fija 8.4.31, que tiene 2 avisos altos y 2 moderados (lectura de archivos vía `sourceMappingURL`). Solo corre en build sobre nuestro CSS, pero así `pnpm audit --prod` queda en 0.

@@ -1,35 +1,43 @@
 # Mantenimiento del sitio público
 
-## Qué puede cambiar el equipo sin tocar código de auth
+## Qué puede cambiar el equipo sin tocar lógica
 
-- Textos: `apps/web/src/content/copy.es.ts`, `features.ts`, `pricing.ts`.
-- Precios: `content/pricing.ts`. Poner `PRICES_CONFIRMED = true` solo cuando la oferta sea real y quitar el aviso. Hoy debe seguir en `false`.
-- Marca pública: `apps/web/src/lib/site.ts` y las variables de abajo.
-- Video: cuando exista `Fondofacilito.mp4` y ffmpeg, `node scripts/build-hero-video.mjs <ruta>`. Los loops tienen que llamarse `facilito-hero-1080-loop.mp4`, `facilito-hero-720-loop.mp4` y, si se puede, `facilito-hero-1080-loop.webm` dentro de `apps/web/public/media/`. No copies el original a `public/`. El componente monta el video solo si esos mp4 existen.
+- Textos: `src/content/copy.es.ts`, `features.ts`, `pricing.ts`.
+- Precios: `src/content/pricing.ts`. Poner `PRICES_CONFIRMED = true` solo cuando la oferta sea real; eso quita el aviso de «precios de referencia».
+- Marca y enlaces: `src/lib/site.ts` y las variables de abajo.
+- Video del hero: con el mp4 fuente y ffmpeg instalado, `node scripts/build-hero-video.mjs <ruta-al-mp4>`. Genera en `public/media/` `facilito-hero-1080-loop.{mp4,webm}`, `facilito-hero-720-loop.{mp4,webm}` y el póster. No copies el original a `public/`. El hero monta `<video>` solo si existen los mp4; si no, se queda con el póster.
 
 ## Variables
 
 Ver `.env.example`.
 
-- `NEXT_PUBLIC_SITE_URL` — origen canónico (metadata, sitemap, robots).
-- `NEXT_PUBLIC_CONTACT_EMAIL` — mailto. Vacío lo oculta.
-- `NEXT_PUBLIC_WHATSAPP_E164` — dígitos con código de país. Vacío oculta WhatsApp.
-- `CONTACT_TO_EMAIL` — buzón que recibe el formulario. Si falta, usa `MAIL_REPLY_TO` y luego `SMTP_USER`.
-- `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` — los mismos nombres que la API. Tienen que estar en el entorno del proceso Next, no solo en el de la API.
-- `CONTACT_DELIVERY=sink` — solo pruebas. En producción no se define.
+- `NEXT_PUBLIC_SITE_URL`: origen canónico (metadata, sitemap, robots).
+- `NEXT_PUBLIC_APP_URL`: app de Facilito (registro e inicio de sesión). Hoy `https://facilitord.vercel.app`.
+- `NEXT_PUBLIC_CONTACT_EMAIL`: mailto. Vacío lo oculta.
+- `NEXT_PUBLIC_WHATSAPP_E164`: dígitos con código de país. Vacío oculta WhatsApp.
+- `CONTACT_TO_EMAIL`: buzón que recibe el formulario. Si falta, usa `MAIL_REPLY_TO` y luego `SMTP_USER`.
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM`: entrega del formulario.
+- `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`: límite de envíos compartido entre instancias (opcional).
+- `CONTACT_DELIVERY=sink`: solo pruebas. En producción no se define o vale `smtp`.
 
-## Dominio
+## Vercel
 
-Cuando exista el dominio propio, `NEXT_PUBLIC_SITE_URL=https://facilito.do` (o el que se compre). En Vercel, redirige los hosts viejos (`facilitord.vercel.app`, `facilito-tau.vercel.app`) al canónico con una redirección 308 de dominio. No se hizo aquí: no hay proyecto de Vercel modificado en este turno.
+Proyecto nuevo apuntando a este repo, rama de producción `main`. Definir las variables en Production. Los previews quedan con `noindex` automáticamente (`VERCEL_ENV=preview`).
+
+Cuando exista el dominio propio, `NEXT_PUBLIC_SITE_URL=https://<dominio>` y redirección 308 de los hosts `*.vercel.app` al canónico desde la configuración de dominios de Vercel.
 
 ## Legal
 
-`/legal/privacidad`, `/legal/terminos` y `/legal/cookies` son borradores del 7 de octubre de 2026 alineados con la Ley 172-13 en lo que el código hace hoy. **Un asesor legal tiene que revisarlos antes del lanzamiento.** No son asesoría.
+`/legal/privacidad`, `/legal/terminos` y `/legal/cookies` son borradores alineados con la Ley 172-13 en lo que el sitio hace hoy, y lo dicen en la página. **Un abogado tiene que revisarlos antes del lanzamiento.** No son asesoría legal.
 
 ## Next.js 16
 
-`npm view next version` el 7 oct 2026 devolvió 16.4.0. Este repo está en 15.5.27. El soporte de la línea 15 termina el **21 de octubre de 2026**. La migración (`npx @next/codemod@canary upgrade latest`) es un commit aparte, después de que build y e2e de auth queden verdes. No se hizo en esta rama.
+El repo está en Next 15.5.27. El soporte de la línea 15 termina el **21 de octubre de 2026**. La migración (`npx @next/codemod@canary upgrade latest`) va en un PR aparte, con `pnpm check` y `pnpm e2e` en verde.
 
-## Auth
+## Comprobar antes de publicar
 
-No cambies `src/lib/auth.tsx`, cookies, callbacks ni validaciones del login para “mejorar” el sitio. El registro de verdad es `/login?tab=registro`.
+```bash
+pnpm check        # typecheck, lint, unit, build
+pnpm e2e          # 33 pruebas: responsive 375–2560, menú, formulario, CSP, SEO, axe
+pnpm audit --prod
+```

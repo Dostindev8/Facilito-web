@@ -1,61 +1,104 @@
 # QA — sitio público Facilito
 
-Fecha de medición: 8 oct 2026. Rama `feat/website-3ds`, build de producción local (`next start`), Windows, Node 22.23.2.
+Medición: 8 oct 2026, rama `feat/website-3ds`, build de producción local (`next start`), Windows, Node 22.23.2, Chromium de Playwright 1.63.
 
 ## Pruebas
 
 | Suite | Resultado |
 |---|---|
-| `tsc --noEmit` (apps/web) | 0 errores |
-| Vitest (`apps/web`, 4 archivos) | 11/11 |
-| Playwright completo (auth, factura, responsive, marketing) | 30/30, Chromium escritorio |
-| axe (`@axe-core/playwright`) en `/`, `/features`, `/precios`, `/contacto`, `/nosotros`, `/legal/*` | 0 violaciones serias o críticas |
+| `pnpm typecheck` | 0 errores |
+| `pnpm lint` (`--max-warnings=0`) | 0 |
+| Vitest (5 archivos: validación de contacto, rate limit, SEO, formato) | 26/26 |
+| Playwright (`e2e/marketing.spec.ts`) | 33/33 |
+| `pnpm audit --prod` | 0 vulnerabilidades |
 
-La regresión de auth (6 pruebas de `e2e/auth.spec.ts`) se corrió contra la API de `HEAD` (594b050) en un worktree limpio. Contra la API del árbol de trabajo fallan 6 pruebas porque hay cambios sin commitear de facturación en `apps/api` que responden 410 `registration_closed` al registro. No vienen de este trabajo.
+Las 33 pruebas e2e cubren:
 
-No cubierto: WebKit y Chromium móvil (Pixel) en Playwright; solo hay proyecto de escritorio con viewports 375/768/1280/1536 en las pruebas de desborde.
+- H1 exacto «Tu negocio, más fácil cada día.» con «fácil» resaltado y espacios visibles (375/768/1440).
+- CTAs que van a la app.
+- «Cómo funciona» sin doble numeración, con tarjetas de igual altura y sin skeletons.
+- Header, hero y trust en el mismo contenedor (375/1440/2560).
+- Precios: mismos montos y tarjetas de igual altura.
+- Sin scroll horizontal en 375, 390, 430, 768, 820, 1024, 1280, 1440, 1920 y 2560 en las 5 rutas, más móvil horizontal.
+- Menú móvil: teclado, Esc, clic afuera, bloqueo de scroll y navegación.
+- Cookies.
+- Formulario: validación en cliente, honeypot, éxito y límite.
+- Sin violaciones de CSP ni errores de consola.
+- robots, sitemap, meta y JSON-LD.
+- Reduced motion y Save-Data.
+- 404.
+- axe WCAG 2.2 AA en 8 rutas: 0 violaciones serias o críticas.
 
-## Lighthouse (móvil, simulado, `next start` local)
+No cubierto: WebKit/Safari y Firefox; solo Chromium.
 
-| Ruta | Perf | A11y | BP | SEO | LCP sim. | LCP observado | CLS | TBT |
-|---|---|---|---|---|---|---|---|---|
-| `/` | 93 | 100 | 100 | 92 | 3169 ms | 372 ms | 0.0015 | 106 ms |
-| `/features` | 97 | 100 | 100 | 92 | 2530 ms | 321 ms | 0 | 54 ms |
-| `/precios` | 97 | 100 | 100 | 92 | 2564 ms | 372 ms | 0.0024 | 86 ms |
-| `/nosotros` | 95 | 100 | 100 | 92 | 2756 ms | 262 ms | 0.0035 | 105 ms |
-| `/contacto` | 95 | 100 | 100 | 92 | 2872 ms | 462 ms | 0 | 84 ms |
+## Lighthouse 12
 
-Línea base antes del cambio: `/login` Perf 88, LCP 3,2 s.
+### Móvil, throttling simulado (el que usa PageSpeed Insights)
 
-Por debajo de la meta (≥95 en todo, LCP < 2,5 s):
+| Ruta | Perf | A11y | BP | SEO | LCP | CLS | TBT |
+|---|---|---|---|---|---|---|---|
+| `/` | 91 | 100 | 100 | 92 | 3,0 s | 0 | 194 ms |
+| `/features` | 95 | 100 | 100 | 92 | 2,5 s | 0 | 176 ms |
+| `/precios` | 96 | 100 | 100 | 92 | 2,6 s | 0 | 107 ms |
+| `/contacto` | 94 | 100 | 100 | 92 | 2,8 s | 0 | 141 ms |
+| `/nosotros` | 96 | 100 | 100 | 92 | 2,7 s | 0 | 102 ms |
+| `/legal/privacidad` | 95 | 100 | 100 | 92 | 2,6 s | 0 | 145 ms |
 
-- Perf de `/` en 93 y LCP simulado de 2,5 a 3,2 s en todas. El elemento LCP es el texto del hero; en la traza real pinta a ~0,3–0,5 s. La simulación cuenta los ~159 kB de JS de la home (motion, Lenis, header con auth). Medir en Vercel/PageSpeed real antes de dar la meta por cumplida o no.
-- SEO 92 en todas: «Document does not have a meta description». Next 15 transmite los metadatos al `<body>` para navegadores. Forzarlos al `<head>` (`htmlLimitedBots`) daba SEO 100 pero bajaba Perf hasta 84; se revirtió (ver `DECISIONS.md` #19). `facebookexternalhit` recibe la descripción en el `<head>`.
+### Móvil, throttling aplicado (devtools)
+
+| Ruta | Perf | LCP | CLS | TBT |
+|---|---|---|---|---|
+| `/` | 94 | 2,3 s | 0 | 145 ms |
+| `/features` | 96 | 1,5 s | 0 | 205 ms |
+| `/precios` | 97 | 1,5 s | 0 | 188 ms |
+| `/contacto` | 98 | 1,4 s | 0 | 149 ms |
+| `/nosotros` | 97 | 1,7 s | 0 | 152 ms |
+| `/legal/privacidad` | 97 | 1,3 s | 0 | 207 ms |
+
+### Escritorio
+
+Perf 99–100, A11y 100, BP 100, SEO 92, LCP 0,58–0,71 s, CLS 0, TBT ≤ 7 ms en las 6 rutas.
+
+### Antes de esta ronda (misma máquina)
+
+- Escritorio `/`: CLS 0,45, causado por `loading.tsx` (decisión #20).
+- Móvil `/nosotros`: CLS 0,118, causado por el swap de fuente (decisión #4).
+- JS inicial de `/`: 159 kB.
+
+### Después de esta ronda
+
+- CLS 0 en todas las rutas.
+- JS inicial de `/`: 118 kB, tras quitar `motion` y cargar Lenis solo en escritorio.
+
+### Fuera de meta
+
+- **SEO 92 en todas las rutas** («Document does not have a meta description»). Next 15 transmite los metadatos al `<body>` para navegadores que no reconoce como bots, y Lighthouse es uno de ellos. Forzarlos al `<head>` da SEO 100 pero baja Performance móvil a 78–88 (decisión #19). Googlebot y los bots sociales sí reciben la descripción.
+- **LCP móvil simulado de 2,5 a 3,0 s** (meta < 2,5 s). El LCP es el texto del hero. En la traza real pinta a 0,3 s sin throttling y a 1,0 s con la CPU 4× más lenta. El simulador cuenta el JS que, en localhost, termina antes del primer pintado. Hay que confirmarlo con PageSpeed Insights sobre la URL de Vercel.
 
 ## Cabeceras (respuesta real de `/`)
 
-`Content-Security-Policy` con nonce y `strict-dynamic` (enforce), `Strict-Transport-Security` (solo build de producción), `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`, `Cross-Origin-Opener-Policy: same-origin`. Sin issues de CSP en consola en `/contacto` tras sacar zod del cliente.
-
-## Rutas
-
-200: `/`, `/features`, `/precios`, `/nosotros`, `/contacto`, `/legal/privacidad`, `/legal/terminos`, `/legal/cookies`, `/sitemap.xml`, `/robots.txt`, `/manifest.webmanifest`, `/login`, `/inicio`, imágenes OG (PNG). 404 en ruta inexistente.
+- `Content-Security-Policy` con nonce y `strict-dynamic`, en modo enforce.
+- `Strict-Transport-Security`, solo en el build de producción.
+- `X-Content-Type-Options: nosniff` y `X-Frame-Options: DENY`.
+- `Referrer-Policy: strict-origin-when-cross-origin`.
+- `Permissions-Policy`.
+- `Cross-Origin-Opener-Policy: same-origin` y `Cross-Origin-Resource-Policy: same-origin`.
+- En previews de Vercel, además, `X-Robots-Tag: noindex, nofollow`.
 
 ## Bundle (First Load JS)
 
 | Ruta | Página | First Load |
 |---|---|---|
-| `/` | 47.9 kB | 159 kB |
-| `/contacto` | 1.46 kB | 104 kB |
-| `/features`, `/precios` | 168 B | 106 kB |
-| `/nosotros`, `/legal/*` | 166 B | 103 kB |
-| `/login` (sin cambios) | 5.91 kB | 128 kB |
+| `/` | 7 kB | 118 kB |
+| `/contacto` | 29 kB | 132 kB (zod en el cliente) |
+| `/nosotros` | 1,75 kB | 110 kB |
+| `/precios` | 1,48 kB | 108 kB |
+| `/features`, `/legal/*` | 1,48 kB | 104 kB |
+
+## Capturas
+
+`docs/captures/after/` tiene las 5 rutas a 375 y 1440 px en WebP. El set completo (375/768/1024/1440/1920) se regenera con `node scripts/capture.mjs after` y sale con desborde horizontal 0 en las 25 combinaciones.
 
 ## Video del hero
 
-No producido. `Fondofacilito.mp4` no está en disco y ffmpeg no está instalado. El hero usa el póster (`/media/facilito-hero-poster.webp`). Con el mp4 y ffmpeg: `node scripts/build-hero-video.mjs <ruta-mp4>`; `HeroVideo` lo monta solo si existen los loops.
-
-## Dependencias
-
-`pnpm audit --audit-level=high` sale con 0: quedan 1 moderado y 2 altos ya ignorados en `pnpm.auditConfig`. Dos avisos nuevos, ajenos a las dependencias del sitio, rompían el paso de audit de CI: `sharp` < 0.35.5 (CVE-2026-96889) y `shell-quote` < 1.11.0 vía Expo (GHSA-pqg4-j6r4-53mv). Se corrigieron con overrides en `package.json` raíz.
-
-CI del PR (`quality`): typecheck, lint, tests, build, e2e con Postgres, aislamiento, gitleaks y audit en verde. Preview de Vercel desplegado; está detrás de Vercel SSO, sin smoke anónimo.
+No producido: no hay mp4 fuente ni ffmpeg en esta máquina. El hero usa el póster (`/media/facilito-hero-poster.webp`). Ver `MAINTENANCE.md`.
