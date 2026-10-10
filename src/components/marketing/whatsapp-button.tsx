@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import { MessageCircle } from 'lucide-react';
 import { site, whatsappHref, WHATSAPP_DEMO_TEXT } from '@/lib/site';
 
 export function WhatsAppButton() {
@@ -6,6 +6,7 @@ export function WhatsAppButton() {
   if (!href) return null;
   return (
     <a className="mkt-wa" href={href} target="_blank" rel="noopener noreferrer">
+      <MessageCircle size={20} aria-hidden />
       WhatsApp
     </a>
   );
@@ -13,8 +14,8 @@ export function WhatsAppButton() {
 
 export function RegisterCta({ children }: { children: string }) {
   return (
-    <Link className="btn btn-primary" href={site.registerPath} prefetch={false}>
+    <a className="btn btn-outline btn-sm" href={site.registerPath}>
       {children}
-    </Link>
+    </a>
   );
 }

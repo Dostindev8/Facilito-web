@@ -1,3 +1,4 @@
+import { PageHero } from '@/components/marketing/page-hero';
 import { PricingFaq } from '@/components/marketing/pricing-faq';
 import { PricingTable } from '@/components/marketing/pricing-table';
 import { JsonLd } from '@/components/marketing/json-ld';
@@ -12,7 +13,7 @@ export const metadata = pageMeta({
 
 export default function PricingPage() {
   return (
-    <div className="mkt-wrap mkt-page-head" style={{ paddingBottom: 72 }}>
+    <>
       <JsonLd
         data={breadcrumbJsonLd([
           { name: 'Inicio', path: '/' },
@@ -20,11 +21,18 @@ export default function PricingPage() {
         ])}
       />
       <JsonLd data={faqJsonLd([...pricingFaqs])} />
-      <h1>Precios</h1>
-      <p>Una sola tabla, con los números marcados como referencia hasta que se confirmen.</p>
-      <PricingTable />
-      <h2 style={{ marginTop: 40 }}>Preguntas frecuentes</h2>
-      <PricingFaq />
-    </div>
+      <PageHero eyebrow="Planes" title="Precios" lead="Una sola tabla, con los números marcados como referencia hasta que se confirmen." />
+      <section className="mkt-section mkt-section-tight" aria-label="Planes">
+        <div className="mkt-wrap">
+          <PricingTable />
+        </div>
+      </section>
+      <section className="mkt-section mkt-section-soft" aria-labelledby="faq">
+        <div className="mkt-wrap mkt-wrap-narrow">
+          <h2 id="faq">Preguntas frecuentes</h2>
+          <PricingFaq />
+        </div>
+      </section>
+    </>
   );
 }
