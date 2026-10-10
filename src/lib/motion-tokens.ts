@@ -1,13 +1,14 @@
-/** Keep in sync with the custom properties in marketing.css. Durations are seconds for motion, ms in CSS. */
+/** Keep in sync with the custom properties in globals.css (--dur-*, --ease). Seconds for motion, ms in CSS. */
 
 export const MOTION = {
-  ease: [0.16, 1, 0.3, 1] as const,
+  ease: [0.2, 0.8, 0.2, 1] as const,
   fast: 0.15,
-  base: 0.32,
-  slow: 0.9,
-  reducedFade: 0.2,
+  base: 0.25,
+  slow: 0.4,
+  hero: 0.8,
 } as const;
 
 export const HEADER_OFFSET_PX = 88;
-export const WORD_STAGGER_MS = 70;
-export const HERO_PARALLAX = '18%';
+/** Max hero background parallax on desktop; disabled on touch and small screens. */
+export const HERO_PARALLAX_PX = 24;
+export const COUNTER_MS = 1200;
