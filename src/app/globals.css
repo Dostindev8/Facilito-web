@@ -172,6 +172,14 @@ textarea {
   border: 0;
 }
 
+.ui-flag-do {
+  display: block;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgb(15 23 42 / 0.18);
+}
+
 .skip-link {
   position: fixed;
   left: 12px;

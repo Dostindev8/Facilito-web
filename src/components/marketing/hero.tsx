@@ -2,16 +2,17 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { ArrowDown, Cloud, MapPin, ShieldCheck, Zap } from 'lucide-react';
+import { ArrowDown, Cloud, ShieldCheck, Zap } from 'lucide-react';
 import { HeroPreview } from './hero-preview';
 import { HeroVideo } from './hero-video';
+import { FlagDO } from '@/components/ui/flag-do';
 import { copy } from '@/content/copy.es';
 import { HERO_PARALLAX_PX } from '@/lib/motion-tokens';
 import { site } from '@/lib/site';
 
 type Conn = { saveData?: boolean; effectiveType?: string };
 
-const TRUST_ICONS = [ShieldCheck, Zap, Cloud, MapPin] as const;
+const TRUST_ICONS = [ShieldCheck, Zap, Cloud, FlagDO] as const;
 
 /** Deterministic particle field (no Math.random, so server and client markup match). */
 const PARTICLES = Array.from({ length: 24 }, (_, i) => ({
