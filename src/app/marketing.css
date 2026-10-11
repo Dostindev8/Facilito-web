@@ -1644,16 +1644,22 @@
   width: max-content;
 }
 
+/* Spacing lives on each item (not `gap`), so one copy is exactly N item boxes and -50% lands on the seam. */
 .mkt-marquee-track {
   display: flex;
   flex-shrink: 0;
-  gap: 12px;
   margin: 0;
-  padding: 0 12px 0 0;
+  padding: 0;
   list-style: none;
 }
 
 .mkt-marquee-track li {
+  display: flex;
+  flex-shrink: 0;
+  padding-right: 12px;
+}
+
+.mkt-marquee-pill {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -1667,14 +1673,26 @@
   white-space: nowrap;
 }
 
+.mkt-marquee-pill svg {
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+/* Duration comes from MarqueeMotion (copy width / px per second); the fallback matches ~40px/s. */
 @media (prefers-reduced-motion: no-preference) {
   .mkt-marquee-inner {
-    animation: mkt-marquee 36s linear infinite;
+    animation: mkt-marquee var(--marquee-duration, 72s) linear infinite;
   }
 
+  .mkt-marquee[data-inview] .mkt-marquee-inner {
+    will-change: transform;
+  }
+
+  .mkt-marquee:not([data-inview]) .mkt-marquee-inner,
   .mkt-marquee:hover .mkt-marquee-inner,
   .mkt-marquee:focus-within .mkt-marquee-inner {
     animation-play-state: paused;
+    will-change: auto;
   }
 }
 
@@ -1696,10 +1714,16 @@
     min-width: 0;
     flex-wrap: wrap;
     justify-content: center;
+    gap: 12px;
     padding: 0;
   }
 
-  .mkt-marquee-track[aria-hidden] {
+  .mkt-marquee-track li {
+    padding: 0;
+  }
+
+  .mkt-marquee-track[aria-hidden],
+  .mkt-marquee-track li[data-repeat] {
     display: none;
   }
 }

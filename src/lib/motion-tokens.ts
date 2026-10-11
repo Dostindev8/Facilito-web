@@ -12,3 +12,5 @@ export const HEADER_OFFSET_PX = 88;
 /** Max hero background parallax on desktop; disabled on touch and small screens. */
 export const HERO_PARALLAX_PX = 24;
 export const COUNTER_MS = 1200;
+/** Capabilities marquee speed: duration = width of one copy / this value, so speed is constant at any width. */
+export const MARQUEE_PX_PER_S = 40;
