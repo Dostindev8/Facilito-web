@@ -17,7 +17,7 @@ export const copy = {
   ],
   /** Illustrative numbers for the hero preview. Labelled on screen as an example, never as customer data. */
   heroPreview: {
-    caption: 'Vista de ejemplo',
+    caption: 'Demo ilustrativa',
     sales: { label: 'Ventas hoy', value: 18450, delta: '+12% vs. ayer' },
     stock: {
       label: 'Inventario',
@@ -32,6 +32,8 @@ export const copy = {
   },
   pillarsIntro: {
     eyebrow: 'Producto',
+    title: 'Lo que ya puedes hacer',
+    emphasis: 'hacer',
     lead: 'Tres módulos que ya están en el panel, pensados para el ritmo de un negocio dominicano.',
     link: 'Ver todo el producto',
   },
@@ -53,6 +55,7 @@ export const copy = {
     id: 'como-funciona',
     eyebrow: 'Paso a paso',
     title: 'Cómo funciona',
+    emphasis: 'funciona',
     lead: 'Cuatro pasos. Sin manual de cien páginas.',
     steps: [
       { n: '01', title: 'Crea tu cuenta', body: 'Nombre, correo y los datos de tu negocio. Entras directo al panel.' },
@@ -62,11 +65,20 @@ export const copy = {
     ],
   },
   trust: [
-    'Hecho en República Dominicana',
-    'Soporte desde Santo Domingo',
-    'RNC y cédula cifrados en reposo',
-    'Comprobantes en el panel · e-CF ante la DGII: próximamente',
+    { title: 'Hecho en República Dominicana' },
+    { title: 'Soporte desde Santo Domingo' },
+    { title: 'RNC y cédula cifrados en reposo' },
+    { title: 'Comprobantes en el panel', detail: 'e-CF ante la DGII: próximamente' },
   ],
+  /** Module names already shown on /features and in the panel. */
+  capabilities: ['Ventas', 'Inventario', 'Facturación', 'Clientes', 'Comprobantes', 'Reportes'],
+  faq: {
+    eyebrow: 'Preguntas frecuentes',
+    title: 'Antes de abrir tu cuenta',
+    emphasis: 'tu cuenta',
+    lead: 'Respuestas sobre lo que Facilito hace hoy.',
+    more: 'Tengo otra pregunta',
+  },
   manifesto: 'No más cuadernos. No más Excel perdidos. Solo tu negocio, en orden.',
   final: {
     title: 'Más tiempo para lo importante.',

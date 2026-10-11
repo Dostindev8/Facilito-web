@@ -132,10 +132,6 @@ export function Hero({ videoReady }: { videoReady: boolean }) {
 
       <div className="mkt-wrap mkt-hero-grid">
         <div className="mkt-hero-copy">
-          <p className="mkt-kicker">
-            <span className="mkt-kicker-dot" aria-hidden="true" />
-            Facilito · {site.maker}
-          </p>
           <h1 id="hero-title" className="mkt-hero-title">
             {before}
             <span className="mkt-hl">{highlight}</span>
