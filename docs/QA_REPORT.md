@@ -1,5 +1,57 @@
 # QA — sitio público Facilito
 
+## Facilito por dentro, bandera RD y marquee (11 oct 2026, rama `feat/product-showcase`)
+
+Build de producción local, misma máquina. Decisiones 44–56 en `DECISIONS.md`.
+
+| Verificación | Antes (`feat/landing-redesign`) | Ahora |
+|---|---|---|
+| `pnpm typecheck` / `pnpm lint` | 0 / 0 | 0 / 0 |
+| `/` en `pnpm build` | 6,97 kB, First Load 118 kB | 9,49 kB, First Load 121 kB (+3 kB; presupuesto < 15 kB) |
+| Vitest | 26/26 | 31/31 (5 nuevas en `showcase.test.ts`) |
+| Playwright, servidor recién iniciado | 41/41 | 54/54; las de pestañas y marquee también con `--repeat-each=3` (30/30) |
+| axe WCAG 2.2 AA, 8 rutas | 0 serias o críticas | 0 serias o críticas |
+| Scroll horizontal | 0 de 375 a 2560 | 0 a 320, 360, 375, 390, 414, 768, 820, 1024, 1280, 1440, 1920, 2560 y 667×375 |
+| `pnpm audit --prod` | 0 | 0 (con dev: 1 alta en `braces`, decisión 56) |
+
+Lighthouse móvil simulado de `/`, dos corridas del mismo build (`docs/lighthouse/home-showcase-mobile-{1,2}.json`):
+
+| | Antes (rondas con la máquina más libre) | Ahora |
+|---|---|---|
+| Performance | 88–89 | 90 / 90 |
+| LCP | 3,2 s | 3,3 s / 3,2 s |
+| TBT | 220–270 ms | 150 ms / 170 ms |
+| CLS | 0,001 | 0 / 0 |
+| A11y, Best Practices, SEO | 100, 100, 92 | 100, 100, 92 |
+
+El INP no se midió en laboratorio; se usa el TBT como referencia. Las mediciones de campo llegan por `/api/vitals`.
+
+Pruebas e2e nuevas:
+
+- 320 y 360 px en la matriz de desborde, más el horizontal a 667×375.
+- Marquee:
+  - la copia duplicada es `inert` y el lector encuentra 6 nombres;
+  - a 2560 px cada copia es más ancha que la pantalla y la unión entre copias queda por debajo de 1 px;
+  - la duración es el ancho ÷ 40 px/s;
+  - fuera de pantalla queda en pausa y sin `will-change`;
+  - con reduced motion se ven exactamente 6 módulos.
+- La bandera aparece en el badge del hero y en la barra de confianza.
+- Pestañas por teclado (flechas, Home/End y foco en el panel).
+- Hotspots: abren con foco, se cierran con Esc y devuelven el foco, abren con hover y con clic, y se cierran con clic afuera.
+- A 320 px las pestañas se desplazan como chips y aparece la lista de detalles.
+- Imágenes:
+  - todas del mismo origen;
+  - la primera `eager` y las lejanas `lazy`;
+  - «Demo ilustrativa» solo en Ventas y Facturación;
+  - el AVIF se sirve con `image/avif` y `nosniff`.
+- Con reduced motion no hay recorrido; el botón «Detener recorrido» lo detiene.
+- Cabeceras de seguridad y CSP con nonce en todas las rutas públicas.
+- Los enlaces externos llevan `rel="noopener noreferrer"`.
+
+Imágenes: los datos personales de las capturas se reemplazaron por valores de demostración y se revisaron a ojo y con búsqueda en el repo (sin PII ni secretos en archivos ni en los últimos 30 commits). Los archivos publicados no tienen EXIF.
+
+Capturas de la sección en `docs/captures/showcase/`: `showcase-<ancho>.png` para los 12 anchos y `showcase-667x375.png`. Se regeneran con `node scripts/capture.mjs showcase`.
+
 ## Rediseño de la landing (11 oct 2026, rama `feat/landing-redesign`)
 
 Build de producción local, misma máquina. Decisiones 27–43 en `DECISIONS.md`.

@@ -46,3 +46,33 @@
 41. Las nubes del hero se dimensionan con el viewport (`60svh`) y no con la altura del hero: un reflujo del texto movía una nube y sumaba CLS 0,047.
 42. `content-visibility: auto` en las secciones de la home bajo el pliegue (`#como-funciona`, `#preguntas`, marquee, barra de confianza) y en el footer. Con CPU 4× más lenta, el layout inicial de la home bajó de ~3,1 s (rama base) a ~2,1 s. En impresión se fuerza `visible`. `scripts/capture.mjs` también lo fuerza antes de las capturas de página completa, que si no salen en blanco bajo el pliegue.
 43. `next.config.ts`: `images.formats` pide AVIF y luego WebP.
+
+## Facilito por dentro (rama `feat/product-showcase`, 11 oct 2026)
+
+44. La rama sale de `feat/landing-redesign`. Orden de la home: Hero → 01 Producto → marquee → 02 Facilito por dentro → 03 Cómo funciona → barra de confianza → 04 Preguntas → cierre.
+45. Las capturas originales van en `public/product/_raw/`, que está en `.gitignore` porque pueden traer datos reales. `scripts/product-images.mjs` redibuja con Poppins los datos personales: el nombre de usuario pasa a «Demo», el RNC a `000-0000000-0` y el correo a `demo@example.com`. También corrige la errata «stock_stock_minimo» desplazando los píxeles originales, sin volver a dibujar el texto. Los valores originales no quedan en el repo, ni siquiera en el script.
+46. AVIF y WebP se generan con sharp instalado fuera del repo (`SHARP_DIR`). No es dependencia del proyecto: en runtime el sitio sirve archivos estáticos. Las imágenes salen sin EXIF (verificado). Las capturas reales miden 1024 px y se publican a 640 y 1024 px, sin ampliarlas a 1600. Las ilustraciones se publican a 640, 1024 y 1600 px.
+47. No había captura real de Ventas (POS) ni de Facturación: la quinta imagen recibida era la landing. Se dibujaron con `scripts/showcase-mocks.mjs` usando los tokens y Poppins del sitio, con datos ficticios. En la página llevan «Demo ilustrativa» y su alt empieza por «Ilustración». Cuando haya capturas reales, se reemplazan sin tocar código (ver `MAINTENANCE.md`).
+48. Se usa `<picture>` con `srcset` AVIF/WebP en lugar de `next/image`, porque los archivos ya vienen optimizados por ancho y así no hace falta el optimizador en runtime. Se mantienen `width`/`height`, `sizes` y un placeholder borroso (WebP de 16 px como `data:`, que `img-src` ya permite). La primera captura carga `eager` y el resto `lazy`; la pestaña siguiente se precarga.
+49. La primera captura no lleva `fetchpriority="high"`: está bajo el pliegue y el LCP es el póster del hero, con el que competiría.
+50. Archivos en kebab-case como el resto del repo: `product-showcase.tsx` y `showcase-tabs.tsx`, no `ProductShowcase.tsx`.
+51. Las pestañas siguen el patrón WAI-ARIA Tabs: tabindex itinerante, flechas, Home/End y `aria-orientation` vertical desde 1024 px. Cada hotspot es un botón con `aria-expanded`/`aria-controls`. Se abre con hover, con foco de teclado o con toque; Esc lo cierra y devuelve el foco, y un clic afuera también lo cierra. Por debajo de 768 px los pines son solo decorativos y el detalle aparece en una lista numerada.
+52. El recorrido automático (7 s por pestaña) solo corre sin reduced motion y en escritorio con puntero fino: en pantallas táctiles no hay hover para pausarlo mientras se lee. Se pausa con hover, con foco, fuera de pantalla o con la pestaña del navegador oculta. Tiene botón «Detener recorrido» (WCAG 2.2.2) y cualquier interacción lo detiene del todo. La barra de progreso es CSS (`scaleX`) y avanza con `animationend`, sin timers.
+53. e-CF y los formatos 606/607/608 solo aparecen en el bloque «próximamente». Un test unitario falla si aparecen en los puntos de una pestaña o si se usa la palabra «certificado».
+54. La bandera RD es `<FlagDO />`: SVG inline con `aria-hidden` y `focusable="false"`, y borde de 1 px con `box-shadow` para no mover el layout. Reemplaza el pin en el badge del hero y en «Hecho en República Dominicana» de la barra de confianza. Los pines de `/contacto` y `/nosotros` marcan una dirección y se quedan.
+55. Auditoría del marquee. Problemas encontrados:
+    - cada copia medía unos 1.000 px, así que a 2560 px quedaba un hueco antes de reiniciar;
+    - el `gap` del track no contaba al final de la copia, lo que producía un salto en la unión;
+    - la duración fija de 36 s hacía que la velocidad dependiera del contenido;
+    - seguía animando fuera de pantalla.
+
+    Corrección:
+    - cada copia repite los 6 módulos 3 veces (más de 2.560 px);
+    - la separación es `padding-right` en cada ítem;
+    - la duración es el ancho de una copia ÷ 40 px/s (`MARQUEE_PX_PER_S`), medida con `ResizeObserver`;
+    - se pausa fuera de pantalla (`IntersectionObserver`), con hover y con foco;
+    - `will-change: transform` solo mientras está en pantalla;
+    - la copia duplicada lleva `aria-hidden` e `inert`, y las repeticiones `aria-hidden`, así el lector de pantalla lee 6 módulos.
+
+    Con reduced motion queda una sola copia de 6 en filas.
+56. `pnpm audit` informa una vulnerabilidad alta en `braces`, que llega por `eslint-config-next` y solo se usa en lint. No hay versión parcheada publicada. `pnpm audit --prod` da 0. Se acepta hasta que Next actualice la cadena.
