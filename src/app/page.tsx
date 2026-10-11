@@ -5,6 +5,7 @@ import { Hero } from '@/components/marketing/hero';
 import { HomeFaq } from '@/components/marketing/home-faq';
 import { HowItWorks } from '@/components/marketing/how-it-works';
 import { JsonLd } from '@/components/marketing/json-ld';
+import { ProductShowcase } from '@/components/marketing/product-showcase';
 import { TrustStrip } from '@/components/marketing/trust-strip';
 import { Pillars } from '@/components/marketing/pillars';
 import { organizationJsonLd, pageMeta, softwareJsonLd, websiteJsonLd } from '@/lib/seo';
@@ -32,6 +33,7 @@ export default function HomePage() {
       <Hero videoReady={heroVideoAvailable()} />
       <Pillars />
       <CapabilityMarquee />
+      <ProductShowcase />
       <HowItWorks />
       <TrustStrip />
       <HomeFaq />

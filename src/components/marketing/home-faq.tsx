@@ -19,7 +19,7 @@ export function HomeFaq() {
       <div className="mkt-wrap mkt-faq-home">
         <SectionHeading
           id="preguntas-title"
-          index={3}
+          index={4}
           eyebrow={copy.faq.eyebrow}
           title={copy.faq.title}
           emphasis={copy.faq.emphasis}

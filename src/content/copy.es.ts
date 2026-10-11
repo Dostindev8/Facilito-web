@@ -70,6 +70,22 @@ export const copy = {
     { title: 'RNC y cédula cifrados en reposo' },
     { title: 'Comprobantes en el panel', detail: 'e-CF ante la DGII: próximamente' },
   ],
+  showcase: {
+    id: 'por-dentro',
+    eyebrow: 'El panel',
+    title: 'Facilito por dentro',
+    emphasis: 'por dentro',
+    lead: 'Así se ve el panel donde llevas ventas, inventario, facturas y reportes. Sin instalar nada.',
+    tabsLabel: 'Módulos del panel',
+    captionCapture: 'Captura del panel · datos de demostración',
+    captionIllustration: 'Demo ilustrativa',
+    detailsLabel: 'Qué ves en la pantalla',
+    imageError: 'No pudimos cargar la imagen. Abajo tienes lo que muestra esta pantalla.',
+    empty: 'Muy pronto verás aquí cómo es el panel por dentro.',
+    stopTour: 'Detener recorrido',
+    cta: 'Empezar gratis',
+    ctaNote: 'Crear la cuenta no pide tarjeta.',
+  },
   /** Module names already shown on /features and in the panel. */
   capabilities: ['Ventas', 'Inventario', 'Facturación', 'Clientes', 'Comprobantes', 'Reportes'],
   faq: {

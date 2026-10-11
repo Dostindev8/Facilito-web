@@ -15,7 +15,7 @@ export function HowItWorks() {
       <div className="mkt-wrap">
         <SectionHeading
           id="como"
-          index={2}
+          index={3}
           eyebrow={copy.how.eyebrow}
           title={copy.how.title}
           emphasis={copy.how.emphasis}
