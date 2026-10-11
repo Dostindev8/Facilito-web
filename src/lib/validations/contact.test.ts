@@ -27,6 +27,14 @@ describe('parseContact', () => {
     if (!shortMsg.ok && !shortMsg.honeypot) expect(shortMsg.fieldErrors.mensaje).toBeTruthy();
   });
 
+  it('acepta el plan elegido y usa "sin-definir" si no viene', () => {
+    const withPlan = parseContact({ ...valid, plan: 'pro' });
+    expect(withPlan.ok && withPlan.message.plan).toBe('pro');
+    const withoutPlan = parseContact(valid);
+    expect(withoutPlan.ok && withoutPlan.message.plan).toBe('sin-definir');
+    expect(parseContact({ ...valid, plan: 'gratis' }).ok).toBe(false);
+  });
+
   it('rechaza el honeypot sin tratarlo como error de campo', () => {
     const result = parseContact({ ...valid, company_website: 'https://spam.test' });
     expect(result).toEqual({ ok: false, honeypot: true });

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { normalizeRdPhone } from '../phone';
-import { BUSINESS_TYPES, CONTACT_LIMITS, CONTACT_MOTIVES } from './contact-fields';
+import { BUSINESS_TYPES, CONTACT_LIMITS, CONTACT_MOTIVES, CONTACT_PLANS } from './contact-fields';
 
 export * from './contact-fields';
 
@@ -15,6 +15,7 @@ export const contactSchema = z
     tipoNegocio: z.enum(BUSINESS_TYPES, { error: 'Elige el tipo de negocio.' }),
     mensaje: z.string().trim().min(10, 'Cuéntanos un poco más (mínimo 10 caracteres).').max(CONTACT_LIMITS.message, 'El mensaje es demasiado largo.'),
     motivo: z.enum(CONTACT_MOTIVES, { error: 'Elige un motivo.' }),
+    plan: z.enum(CONTACT_PLANS, { error: 'Elige un plan.' }).optional(),
     company_website: z.string().max(CONTACT_LIMITS.honeypot).optional(),
   })
   .strict();
@@ -28,6 +29,7 @@ export interface ContactMessage {
   tipoNegocio: (typeof BUSINESS_TYPES)[number];
   mensaje: string;
   motivo: (typeof CONTACT_MOTIVES)[number];
+  plan: (typeof CONTACT_PLANS)[number];
 }
 
 export type ContactParse =
@@ -68,6 +70,7 @@ export function parseContact(raw: unknown): ContactParse {
       tipoNegocio: parsed.data.tipoNegocio,
       mensaje: parsed.data.mensaje,
       motivo: parsed.data.motivo,
+      plan: parsed.data.plan ?? 'sin-definir',
     },
   };
 }

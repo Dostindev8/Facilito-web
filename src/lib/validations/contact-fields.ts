@@ -1,6 +1,8 @@
 // Constants and form state shared by the server action and the client form.
 export const BUSINESS_TYPES = ['colmado', 'ferreteria', 'farmacia', 'salon', 'restaurante', 'boutique', 'servicios', 'otro'] as const;
 export const CONTACT_MOTIVES = ['demo', 'ventas', 'soporte'] as const;
+/** Plan the visitor asks for; must match the plan ids in content/pricing.ts. */
+export const CONTACT_PLANS = ['sin-definir', 'pro', 'business'] as const;
 
 export const CONTACT_LIMITS = {
   name: 80,

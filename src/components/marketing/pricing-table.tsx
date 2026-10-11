@@ -1,20 +1,18 @@
 import Link from 'next/link';
-import { Check, Info } from 'lucide-react';
-import { plans, PRICES_CONFIRMED } from '@/content/pricing';
-import { site } from '@/lib/site';
+import { Check, Gift, MessageCircle } from 'lucide-react';
+import { plans, startSteps, TRIAL } from '@/content/pricing';
+import { planContactPath, whatsappHref, whatsappPlanText } from '@/lib/site';
 
 export function PricingTable() {
   return (
     <>
-      {!PRICES_CONFIRMED && (
-        <p className="mkt-price-banner" role="note">
-          <Info size={18} aria-hidden />
-          <span>Precios de referencia. No son una oferta vigente: hay que confirmarlos con {site.maker} antes de contratar.</span>
-        </p>
-      )}
+      <p className="mkt-trial-banner" role="note">
+        <Gift size={20} aria-hidden />
+        <span>{TRIAL.note}</span>
+      </p>
       <div className="mkt-prices">
         {plans.map((plan, index) => {
-          const cta = plan.id === 'gratis' ? site.registerPath : '/contacto?motivo=ventas';
+          const wa = whatsappHref(whatsappPlanText(plan.name));
           return (
             <article
               key={plan.id}
@@ -29,6 +27,7 @@ export function PricingTable() {
                 <strong>US${plan.priceUsd}</strong>
                 <span> / mes</span>
               </p>
+              <p className="mkt-price-trial">{TRIAL.label}, luego US${plan.priceUsd} al mes</p>
               <p className="mkt-price-blurb">{plan.blurb}</p>
               <ul className="mkt-checks">
                 {plan.items.map((item) => (
@@ -38,18 +37,32 @@ export function PricingTable() {
                   </li>
                 ))}
               </ul>
-              {plan.id === 'gratis' ? (
-                <a className={`btn ${plan.featured ? 'btn-primary' : 'btn-outline'}`} href={cta}>
-                  {plan.cta}
+              <Link className={`btn ${plan.featured ? 'btn-primary' : 'btn-outline'}`} href={planContactPath(plan.id)}>
+                {plan.cta}
+              </Link>
+              {wa && (
+                <a className="mkt-price-wa" href={wa} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle size={16} aria-hidden />
+                  Pedirlo por WhatsApp
                 </a>
-              ) : (
-                <Link className={`btn ${plan.featured ? 'btn-primary' : 'btn-outline'}`} href={cta}>
-                  {plan.cta}
-                </Link>
               )}
             </article>
           );
         })}
+      </div>
+      <div className="mkt-start" data-reveal>
+        <h2 id="como-empiezas">Cómo empiezas</h2>
+        <ol aria-labelledby="como-empiezas">
+          {startSteps.map((step, index) => (
+            <li key={step.title}>
+              <span className="mkt-start-n" aria-hidden="true">
+                {index + 1}
+              </span>
+              <strong>{step.title}</strong>
+              <span>{step.body}</span>
+            </li>
+          ))}
+        </ol>
       </div>
     </>
   );

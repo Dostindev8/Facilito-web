@@ -14,5 +14,5 @@ export const HERO_PARALLAX_PX = 24;
 export const COUNTER_MS = 1200;
 /** Capabilities marquee speed: duration = width of one copy / this value, so speed is constant at any width. */
 export const MARQUEE_PX_PER_S = 40;
-/** Showcase autoadvance interval; only runs without reduced motion and stops for good after any interaction. */
-export const SHOWCASE_AUTOPLAY_MS = 7000;
+/** Showcase tour: time on each hotspot before moving to the next one (and to the next tab after the last). */
+export const SHOWCASE_STEP_MS = 4500;

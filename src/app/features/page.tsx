@@ -2,7 +2,8 @@ import { BarChart3, ClipboardList, Package, Receipt, Truck, Users } from 'lucide
 import { comingSoon, features } from '@/content/features';
 import { JsonLd } from '@/components/marketing/json-ld';
 import { PageHero } from '@/components/marketing/page-hero';
-import { RegisterCta } from '@/components/marketing/whatsapp-button';
+import { StartCta } from '@/components/marketing/whatsapp-button';
+import { copy } from '@/content/copy.es';
 import { breadcrumbJsonLd, pageMeta } from '@/lib/seo';
 
 export const metadata = pageMeta({
@@ -53,7 +54,7 @@ export default function FeaturesPage() {
                     <strong>Con Facilito. </strong>
                     {feature.solution}
                   </p>
-                  <RegisterCta>Empezar gratis</RegisterCta>
+                  <StartCta>{copy.start.label}</StartCta>
                 </article>
               );
             })}

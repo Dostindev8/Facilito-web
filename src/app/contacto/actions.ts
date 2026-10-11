@@ -36,6 +36,7 @@ export async function submitContact(_prev: ContactFormState, formData: FormData)
     tipoNegocio: formData.get('tipoNegocio'),
     mensaje: formData.get('mensaje'),
     motivo: formData.get('motivo'),
+    plan: formData.get('plan') ?? undefined,
     company_website: formData.get('company_website') ?? '',
   };
 

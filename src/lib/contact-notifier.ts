@@ -36,9 +36,10 @@ const smtp: ContactNotifier = {
       from: process.env.MAIL_FROM || process.env.SMTP_USER,
       to,
       replyTo: message.email,
-      subject: `Facilito · contacto · ${message.motivo}`,
+      subject: `Facilito · contacto · ${message.motivo}${message.plan === 'sin-definir' ? '' : ` · plan ${message.plan}`}`,
       text: [
         `Motivo: ${message.motivo}`,
+        `Plan: ${message.plan}`,
         `Nombre: ${message.nombre}`,
         `WhatsApp: ${message.telefono}`,
         `Correo: ${message.email}`,

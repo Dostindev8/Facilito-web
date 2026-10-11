@@ -29,10 +29,12 @@ describe('seo helpers', () => {
     expect(absoluteUrl('/precios')).toBe('https://facilito.example/precios');
   });
 
-  it('no inventa reseñas ni precio en el software', () => {
+  it('no inventa reseñas; publica solo los precios confirmados', () => {
     const data = softwareJsonLd();
-    expect(data.aggregateRating).toBeUndefined();
-    expect(JSON.stringify(data)).not.toMatch(/aggregateRating|price/);
+    expect(JSON.stringify(data)).not.toMatch(/aggregateRating/);
+    const offers = data.offers as { price: string; priceCurrency: string }[];
+    expect(offers.map((offer) => offer.price)).toEqual(['16', '39']);
+    expect(offers.every((offer) => offer.priceCurrency === 'USD')).toBe(true);
   });
 
   it('numera las migas', () => {

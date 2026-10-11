@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { ShowcaseTabs } from './showcase-tabs';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { copy } from '@/content/copy.es';
@@ -21,16 +22,17 @@ export function ProductShowcase() {
               captionIllustration: text.captionIllustration,
               details: text.detailsLabel,
               imageError: text.imageError,
-              stopTour: text.stopTour,
+              pauseTour: text.pauseTour,
+              playTour: text.playTour,
             }}
           />
         ) : (
           <p className="mkt-show-empty">{text.empty}</p>
         )}
         <div className="mkt-show-cta" data-reveal>
-          <a className="btn btn-primary" href={site.registerPath}>
+          <Link className="btn btn-primary" href={site.startPath}>
             {text.cta}
-          </a>
+          </Link>
           <span>{text.ctaNote}</span>
         </div>
       </div>

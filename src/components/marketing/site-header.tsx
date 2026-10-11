@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect, useId, useRef, useState } from 'react';
 import { ArrowRight, Menu, X } from 'lucide-react';
 import { Logo } from '@/components/brand/logo';
+import { copy } from '@/content/copy.es';
 import { lockScroll, unlockScroll } from '@/lib/scroll-lock';
 import { site } from '@/lib/site';
 
@@ -135,9 +136,9 @@ export function SiteHeader() {
           <a className="mkt-login-link" href={site.loginPath}>
             Iniciar sesión
           </a>
-          <a className="btn btn-primary btn-sm mkt-header-register" href={site.registerPath}>
-            Empezar gratis
-          </a>
+          <Link className="btn btn-primary btn-sm mkt-header-register" href={site.startPath}>
+            {copy.start.label}
+          </Link>
           <button
             ref={burgerRef}
             type="button"
@@ -164,9 +165,9 @@ export function SiteHeader() {
               ))}
             </nav>
             <div className="mkt-menu-actions">
-              <a className="btn btn-primary" href={site.registerPath}>
-                Empezar gratis
-              </a>
+              <Link className="btn btn-primary" href={site.startPath} onClick={() => setOpen(false)}>
+                {copy.start.label}
+              </Link>
               <a className="btn btn-outline" href={site.loginPath}>
                 Iniciar sesión
               </a>

@@ -38,9 +38,9 @@ export function SiteFooter() {
             <Logo size={40} tone="light" byline />
             <p>{site.description}</p>
             <div className="mkt-footer-cta">
-              <a className="btn btn-primary btn-sm" href={site.registerPath}>
-                Empezar gratis
-              </a>
+              <Link className="btn btn-primary btn-sm" href={site.startPath}>
+                {copy.start.label}
+              </Link>
               <a className="btn btn-glass btn-sm" href={site.loginPath}>
                 Iniciar sesión
               </a>

@@ -1434,11 +1434,110 @@
   margin-top: 2px;
 }
 
+.mkt-trial-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 14px 18px;
+  border: 1px solid var(--green-100);
+  border-radius: var(--radius);
+  background: var(--green-50);
+  color: var(--green-800);
+  font-weight: 600;
+}
+
+.mkt-trial-banner svg {
+  flex-shrink: 0;
+  color: var(--green-700);
+}
+
 .mkt-prices {
   display: grid;
   gap: 16px;
-  margin-top: 28px;
+  max-width: 880px;
+  margin: 28px auto 0;
   align-items: stretch;
+}
+
+.mkt-price-trial {
+  align-self: flex-start;
+  margin-top: 12px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--orange-50);
+  border: 1px solid #fde1c2;
+  color: #8a4b00;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.mkt-price-wa {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  margin-top: 8px;
+  color: var(--green-700);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.mkt-start {
+  max-width: 880px;
+  margin: 40px auto 0;
+}
+
+.mkt-start h2 {
+  font-size: var(--step-2);
+}
+
+.mkt-start ol {
+  display: grid;
+  gap: 12px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mkt-start li {
+  display: grid;
+  grid-template-columns: 36px 1fr;
+  column-gap: 14px;
+  align-items: start;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #fff;
+}
+
+.mkt-start li > :not(.mkt-start-n) {
+  grid-column: 2;
+}
+
+.mkt-start-n {
+  grid-row: span 2;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--green-700);
+  color: #fff;
+  font-weight: 700;
+}
+
+.mkt-start li span:last-child {
+  color: var(--ink-2);
+}
+
+@media (min-width: 768px) {
+  .mkt-prices,
+  .mkt-start ol {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .mkt-price {
@@ -1809,15 +1908,26 @@
   gap: 12px;
 }
 
+/* One segment per hotspot of the active tab; the current one fills while the tour runs. */
 .mkt-show-progress {
   flex: 1;
-  height: 3px;
+  display: flex;
+  gap: 4px;
+}
+
+.mkt-show-seg {
+  flex: 1;
+  height: 4px;
   overflow: hidden;
   border-radius: var(--radius-pill);
   background: var(--line);
 }
 
-.mkt-show-progress > span {
+.mkt-show-seg[data-done] {
+  background: var(--green-600);
+}
+
+.mkt-show-seg > span {
   display: block;
   height: 100%;
   background: var(--green-600);
@@ -1829,33 +1939,44 @@
   animation-play-state: paused;
 }
 
-.mkt-show-progress > span[data-running] {
+.mkt-show-seg > span[data-running] {
   animation-play-state: running;
 }
 
 .mkt-show-stop {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   min-height: 44px;
-  padding: 0 6px;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: none;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: #fff;
   color: var(--green-700);
   font: inherit;
   font-size: 0.85rem;
   font-weight: 600;
-  text-decoration: underline;
-  text-underline-offset: 3px;
   cursor: pointer;
 }
 
-.mkt-show-panel {
+/* Every panel shares one grid cell, so the stage keeps the tallest panel's height and the
+   page below never moves while the tour switches tabs (no CLS). */
+.mkt-show-stage {
   display: grid;
+}
+
+.mkt-show-panel {
+  grid-area: 1 / 1;
+  display: grid;
+  align-content: start;
   gap: 20px;
   border-radius: var(--radius-lg);
 }
 
 .mkt-show-panel[hidden] {
-  display: none;
+  display: grid;
+  visibility: hidden;
 }
 
 .mkt-show-frame {
@@ -2038,6 +2159,39 @@
   color: rgb(255 255 255 / 0.84);
 }
 
+.mkt-show-spot[data-current] .mkt-show-marker {
+  background: #b45309;
+  scale: 1.2;
+}
+
+/* Small screens: the tour narrates in a caption over the bottom of the screen instead of popovers. */
+.mkt-show-caption {
+  position: absolute;
+  z-index: 3;
+  right: 8px;
+  bottom: 8px;
+  left: 8px;
+  margin: 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgb(15 23 42 / 0.88);
+  color: rgb(255 255 255 / 0.86);
+  font-size: 0.78rem;
+  line-height: 1.35;
+  pointer-events: none;
+}
+
+.mkt-show-caption strong {
+  color: #fff;
+  font-weight: 600;
+}
+
+@media (max-width: 767.98px) {
+  .mkt-show-pop {
+    display: none;
+  }
+}
+
 .mkt-show-frame figcaption {
   padding: 8px 14px;
   border-top: 1px solid var(--line);
@@ -2111,6 +2265,14 @@
   font-size: 0.88rem;
 }
 
+.mkt-show-details li[data-current] {
+  color: var(--ink);
+}
+
+.mkt-show-details li[data-current] strong {
+  color: #8a4b00;
+}
+
 .mkt-show-cta {
   display: flex;
   flex-wrap: wrap;
@@ -2136,7 +2298,8 @@
   }
 
   .mkt-show-marker,
-  .mkt-show-details {
+  .mkt-show-details,
+  .mkt-show-caption {
     display: none;
   }
 }
@@ -3263,10 +3426,6 @@
 }
 
 @media (min-width: 900px) {
-  .mkt-prices {
-    grid-template-columns: repeat(3, 1fr);
-  }
-
   .mkt-price.featured {
     transform: translateY(-8px);
   }

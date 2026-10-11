@@ -4,12 +4,13 @@ import { SectionHeading } from '@/components/ui/section-heading';
 import { copy } from '@/content/copy.es';
 import { pricingFaqs } from '@/content/pricing';
 
-/** Already-published answers that hold for the product as it is today; pricing-only ones stay on /precios. */
+/** Same answers as /precios (single source); the rest stay there. */
 const HOME_QUESTIONS = new Set<string>([
-  '¿Necesito tarjeta para crear la cuenta?',
+  '¿Cuánto cuesta Facilito?',
+  '¿Cómo funciona el mes gratis?',
+  '¿Cómo se paga?',
   '¿Facilito ya envía comprobantes electrónicos a la DGII?',
   '¿Dónde quedan mis datos?',
-  '¿Puedo entrar con Google?',
 ]);
 
 export function HomeFaq() {

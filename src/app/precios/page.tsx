@@ -7,7 +7,7 @@ import { breadcrumbJsonLd, faqJsonLd, pageMeta } from '@/lib/seo';
 
 export const metadata = pageMeta({
   title: 'Precios',
-  description: 'Referencia de planes de Facilito. Los precios publicados aquí no están confirmados como oferta vigente.',
+  description: 'Planes de Facilito: Pro US$16/mes y Business US$39/mes. El primer mes es gratis y te preparamos el usuario según el plan.',
   path: '/precios',
 });
 
@@ -21,8 +21,12 @@ export default function PricingPage() {
         ])}
       />
       <JsonLd data={faqJsonLd([...pricingFaqs])} />
-      <PageHero eyebrow="Planes" title="Precios" lead="Una sola tabla, con los números marcados como referencia hasta que se confirmen." />
-      <section className="mkt-section mkt-section-tight" aria-label="Planes">
+      <PageHero
+        eyebrow="Planes"
+        title="Precios"
+        lead="Dos planes mensuales. Eliges uno, te preparamos el usuario y el primer mes es gratis."
+      />
+      <section className="mkt-section mkt-section-tight mkt-anchor" id="planes" aria-label="Planes">
         <div className="mkt-wrap">
           <PricingTable />
         </div>

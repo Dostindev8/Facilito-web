@@ -36,7 +36,18 @@ export const site = {
   appUrl: appUrl(),
   registerPath: `${appUrl()}/login?tab=registro`,
   loginPath: `${appUrl()}/login`,
+  /** New customers pick a plan first; the team then sets up their user. */
+  startPath: '/precios#planes',
 } as const;
+
+/** Contact form preselected for a plan request. */
+export function planContactPath(planId: string): string {
+  return `/contacto?motivo=ventas&plan=${encodeURIComponent(planId)}`;
+}
+
+export function whatsappPlanText(planName: string): string {
+  return `Hola, quiero el plan ${planName} de Facilito con el primer mes gratis.`;
+}
 
 function appUrl(): string {
   return trimSlash(process.env.NEXT_PUBLIC_APP_URL || 'https://facilitord.vercel.app');

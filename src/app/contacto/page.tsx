@@ -4,18 +4,20 @@ import { JsonLd } from '@/components/marketing/json-ld';
 import { PageHero } from '@/components/marketing/page-hero';
 import { CONTACT_MOTIVES } from '@/lib/validations/contact-fields';
 import { breadcrumbJsonLd, pageMeta } from '@/lib/seo';
-import { site, whatsappHref, WHATSAPP_DEMO_TEXT } from '@/lib/site';
+import { planById } from '@/content/pricing';
+import { site, whatsappHref, whatsappPlanText, WHATSAPP_DEMO_TEXT } from '@/lib/site';
 
 export const metadata = pageMeta({
   title: 'Contacto',
-  description: 'Pide una demo o escribe a Facilito. Santo Domingo, República Dominicana.',
+  description: 'Elige tu plan, pide una demo o escribe a Facilito. Primer mes gratis. Santo Domingo, República Dominicana.',
   path: '/contacto',
 });
 
-export default async function ContactPage({ searchParams }: { searchParams: Promise<{ motivo?: string }> }) {
-  const { motivo } = await searchParams;
+export default async function ContactPage({ searchParams }: { searchParams: Promise<{ motivo?: string; plan?: string }> }) {
+  const { motivo, plan: planParam } = await searchParams;
   const initial = CONTACT_MOTIVES.find((item) => item === motivo) ?? 'ventas';
-  const wa = whatsappHref(WHATSAPP_DEMO_TEXT);
+  const plan = planById(planParam);
+  const wa = whatsappHref(plan ? whatsappPlanText(plan.name) : WHATSAPP_DEMO_TEXT);
   const map = 'https://www.google.com/maps/search/?api=1&query=Santo%20Domingo%20Republica%20Dominicana';
 
   return (
@@ -29,12 +31,20 @@ export default async function ContactPage({ searchParams }: { searchParams: Prom
       <PageHero
         eyebrow="Hablemos"
         title="Contacto"
-        lead="Cuéntanos del negocio. Si el correo no está configurado en el servidor, el formulario lo dice claro y no finge que envió."
+        lead={
+          plan
+            ? `Déjanos tus datos y te preparamos el usuario del plan ${plan.name}. El primer mes es gratis; desde el segundo pagas US$${plan.priceUsd} al mes por transferencia.`
+            : 'Cuéntanos de tu negocio. Te respondemos por WhatsApp o correo para activar tu plan, mostrarte una demo o ayudarte con el panel.'
+        }
       />
       <section className="mkt-section mkt-section-tight" aria-label="Formulario de contacto">
         <div className="mkt-wrap mkt-contact">
           <div className="mkt-contact-card">
-            <ContactForm initialMotivo={initial} />
+            <ContactForm
+              initialMotivo={initial}
+              initialPlan={plan?.id}
+              initialMessage={plan ? `Quiero el plan ${plan.name} con el primer mes gratis.` : ''}
+            />
           </div>
           <aside className="mkt-contact-side" aria-labelledby="contact-side">
             <h2 id="contact-side">También por aquí</h2>

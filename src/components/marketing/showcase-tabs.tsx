@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState, type FocusEvent, type KeyboardEvent, type PointerEvent } from 'react';
+import { Pause, Play } from 'lucide-react';
 import type { ShowcaseTab } from '@/content/showcase';
-import { SHOWCASE_AUTOPLAY_MS } from '@/lib/motion-tokens';
+import { SHOWCASE_STEP_MS } from '@/lib/motion-tokens';
 
 type Labels = {
   tabs: string;
@@ -10,7 +11,8 @@ type Labels = {
   captionIllustration: string;
   details: string;
   imageError: string;
-  stopTour: string;
+  pauseTour: string;
+  playTour: string;
 };
 
 type ImageState = 'loaded' | 'error';
@@ -19,42 +21,54 @@ type Spot = { key: string; by: 'hover' | 'focus' | 'click' };
 const SIZES = '(min-width: 1280px) 820px, (min-width: 1024px) calc(100vw - 460px), calc(100vw - 40px)';
 const SWIPE_PX = 48;
 
+const spotKey = (tabId: string, index: number) => `show-${tabId}-${index + 1}`;
+
 /**
- * WAI-ARIA tabs (roving tabindex, arrows, Home/End) over the showcase panels, plus numbered
- * hotspots and an optional guided tour. The tour only exists without reduced motion on desktop pointers, pauses
- * while hovered, focused or off screen, and never resumes once the visitor takes control.
+ * WAI-ARIA tabs (roving tabindex, arrows, Home/End) over the showcase panels, plus numbered hotspots.
+ * Without reduced motion a tour walks every hotspot of every tab and loops forever. It pauses while
+ * hovered, keyboard-focused, off screen, in a hidden tab or while the visitor has a hotspot open, and
+ * has a pause button (WCAG 2.2.2). Choosing a tab moves the tour there instead of ending it.
  */
 export function ShowcaseTabs({ tabs, labels }: { tabs: ShowcaseTab[]; labels: Labels }) {
   const [active, setActive] = useState(0);
+  const [step, setStep] = useState(0);
   const [spot, setSpot] = useState<Spot | null>(null);
   const [images, setImages] = useState<Record<number, ImageState>>({});
   const [mounted, setMounted] = useState(false);
   const [vertical, setVertical] = useState(false);
-  const [tour, setTour] = useState<'off' | 'on' | 'stopped'>('off');
+  const [tour, setTour] = useState(false);
+  const [paused, setPaused] = useState(false);
   const [holds, setHolds] = useState({ offscreen: true, hover: false, focus: false, hidden: false });
   const rootRef = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const swipe = useRef<{ x: number; y: number } | null>(null);
   const count = tabs.length;
+  const current = tabs[active];
 
   const warm = useCallback((index: number) => {
     const img = rootRef.current?.querySelector<HTMLImageElement>(`img[data-index="${index}"]`);
     if (img && img.loading === 'lazy') img.loading = 'eager';
   }, []);
 
-  const select = useCallback(
-    (index: number, options: { user?: boolean; focus?: boolean } = {}) => {
-      setActive(index);
-      setSpot(null);
-      if (options.user) setTour((current) => (current === 'on' ? 'stopped' : current));
-      if (options.focus) tabRefs.current[index]?.focus();
-    },
-    [],
-  );
+  const select = useCallback((index: number, options: { focus?: boolean } = {}) => {
+    setActive(index);
+    setStep(0);
+    setSpot(null);
+    if (options.focus) tabRefs.current[index]?.focus();
+  }, []);
+
+  const advance = useCallback(() => {
+    if (current && step + 1 < current.hotspots.length) {
+      setStep(step + 1);
+      return;
+    }
+    setActive((active + 1) % count);
+    setStep(0);
+  }, [active, count, current, step]);
 
   const setHold = useCallback((key: keyof typeof holds, value: boolean) => {
-    setHolds((current) => (current[key] === value ? current : { ...current, [key]: value }));
+    setHolds((state) => (state[key] === value ? state : { ...state, [key]: value }));
   }, []);
 
   useEffect(() => {
@@ -67,16 +81,13 @@ export function ShowcaseTabs({ tabs, labels }: { tabs: ShowcaseTab[]; labels: La
 
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
     const wide = window.matchMedia('(min-width: 1024px)');
-    // Touch screens have no hover to pause it while reading, so the tour is desktop-pointer only.
-    const pointer = window.matchMedia('(min-width: 1024px) and (hover: hover) and (pointer: fine)');
     const apply = () => {
-      setTour((current) => (current === 'stopped' ? current : reduce.matches || !pointer.matches ? 'off' : 'on'));
+      setTour(!reduce.matches);
       setVertical(wide.matches);
     };
     apply();
     reduce.addEventListener('change', apply);
     wide.addEventListener('change', apply);
-    pointer.addEventListener('change', apply);
 
     const observer = new IntersectionObserver(([entry]) => setHold('offscreen', !entry?.isIntersecting), { threshold: 0.35 });
     observer.observe(root);
@@ -85,7 +96,6 @@ export function ShowcaseTabs({ tabs, labels }: { tabs: ShowcaseTab[]; labels: La
     return () => {
       reduce.removeEventListener('change', apply);
       wide.removeEventListener('change', apply);
-      pointer.removeEventListener('change', apply);
       observer.disconnect();
       document.removeEventListener('visibilitychange', onVisibility);
     };
@@ -123,13 +133,18 @@ export function ShowcaseTabs({ tabs, labels }: { tabs: ShowcaseTab[]; labels: La
     const next = keys[event.key];
     if (next === undefined) return;
     event.preventDefault();
-    select(next, { user: true, focus: true });
+    select(next, { focus: true });
   };
 
   const onRootKey = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key !== 'Escape' || !spot) return;
     document.getElementById(`${spot.key}-pin`)?.focus();
     setSpot(null);
+  };
+
+  // Only keyboard focus holds the tour: a tap or click also focuses the button, and that should not freeze it.
+  const onRootFocus = (event: FocusEvent<HTMLDivElement>) => {
+    if ((event.target as HTMLElement).matches(':focus-visible')) setHold('focus', true);
   };
 
   const onRootBlur = (event: FocusEvent<HTMLDivElement>) => {
@@ -147,17 +162,20 @@ export function ShowcaseTabs({ tabs, labels }: { tabs: ShowcaseTab[]; labels: La
     const dx = event.clientX - start.x;
     const dy = event.clientY - start.y;
     if (Math.abs(dx) < SWIPE_PX || Math.abs(dx) < Math.abs(dy) * 1.5) return;
-    select(dx < 0 ? (active + 1) % count : (active - 1 + count) % count, { user: true });
+    select(dx < 0 ? (active + 1) % count : (active - 1 + count) % count);
   };
 
-  const running = tour === 'on' && !holds.offscreen && !holds.hover && !holds.focus && !holds.hidden;
+  const running = tour && !paused && !spot && !holds.offscreen && !holds.hover && !holds.focus && !holds.hidden;
+  const tourKey = tour && current ? spotKey(current.id, step) : null;
+  const openKey = spot?.key ?? tourKey;
 
   return (
     <div
       ref={rootRef}
       className="mkt-show-grid"
+      data-tour={tour || undefined}
       onKeyDown={onRootKey}
-      onFocus={() => setHold('focus', true)}
+      onFocus={onRootFocus}
       onBlur={onRootBlur}
       onPointerEnter={(event) => event.pointerType === 'mouse' && setHold('hover', true)}
       onPointerLeave={(event) => event.pointerType === 'mouse' && setHold('hover', false)}
@@ -184,7 +202,7 @@ export function ShowcaseTabs({ tabs, labels }: { tabs: ShowcaseTab[]; labels: La
               aria-controls={`show-panel-${tab.id}`}
               tabIndex={index === active ? 0 : -1}
               className="mkt-show-tab"
-              onClick={() => select(index, { user: true })}
+              onClick={() => select(index)}
               onPointerEnter={() => warm(index)}
             >
               <span className="mkt-show-tab-label">{tab.label}</span>
@@ -192,18 +210,25 @@ export function ShowcaseTabs({ tabs, labels }: { tabs: ShowcaseTab[]; labels: La
             </button>
           ))}
         </div>
-        {tour === 'on' && (
+        {tour && current && (
           <div className="mkt-show-tour">
             <span className="mkt-show-progress" aria-hidden="true">
-              <span
-                key={active}
-                data-running={running || undefined}
-                style={{ animationDuration: `${SHOWCASE_AUTOPLAY_MS}ms` }}
-                onAnimationEnd={() => select((active + 1) % count)}
-              />
+              {current.hotspots.map((hotspot, index) => (
+                <span key={hotspot.title} className="mkt-show-seg" data-done={index < step || undefined}>
+                  {index === step && (
+                    <span
+                      key={`${active}-${step}`}
+                      data-running={running || undefined}
+                      style={{ animationDuration: `${SHOWCASE_STEP_MS}ms` }}
+                      onAnimationEnd={advance}
+                    />
+                  )}
+                </span>
+              ))}
             </span>
-            <button type="button" className="mkt-show-stop" onClick={() => setTour('stopped')}>
-              {labels.stopTour}
+            <button type="button" className="mkt-show-stop" onClick={() => setPaused((value) => !value)}>
+              {paused ? <Play size={16} aria-hidden /> : <Pause size={16} aria-hidden />}
+              {paused ? labels.playTour : labels.pauseTour}
             </button>
           </div>
         )}
@@ -213,6 +238,7 @@ export function ShowcaseTabs({ tabs, labels }: { tabs: ShowcaseTab[]; labels: La
         {tabs.map((tab, index) => {
           const media = tab.media;
           const state = media ? images[index] : 'error';
+          const caption = index === active && tourKey ? tab.hotspots[step] : undefined;
           return (
             <div
               key={tab.id}
@@ -263,8 +289,8 @@ export function ShowcaseTabs({ tabs, labels }: { tabs: ShowcaseTab[]; labels: La
                   )}
                   {state === 'error' && <p className="mkt-show-error">{labels.imageError}</p>}
                   {tab.hotspots.map((hotspot, n) => {
-                    const key = `show-${tab.id}-${n + 1}`;
-                    const open = spot?.key === key;
+                    const key = spotKey(tab.id, n);
+                    const open = openKey === key && index === active;
                     return (
                       <div
                         key={key}
@@ -272,6 +298,7 @@ export function ShowcaseTabs({ tabs, labels }: { tabs: ShowcaseTab[]; labels: La
                         style={{ left: `${hotspot.x}%`, top: `${hotspot.y}%` }}
                         data-side={hotspot.x > 60 ? 'start' : 'end'}
                         data-up={hotspot.y > 62 || undefined}
+                        data-current={open || undefined}
                       >
                         <span className="mkt-show-marker" aria-hidden="true">
                           {n + 1}
@@ -283,14 +310,11 @@ export function ShowcaseTabs({ tabs, labels }: { tabs: ShowcaseTab[]; labels: La
                           aria-expanded={open}
                           aria-controls={key}
                           aria-label={`${n + 1}. ${hotspot.title}`}
-                          onClick={() => {
-                            setTour((current) => (current === 'on' ? 'stopped' : current));
-                            setSpot(open && spot?.by !== 'hover' ? null : { key, by: 'click' });
-                          }}
-                          onPointerEnter={(event) => event.pointerType === 'mouse' && !open && setSpot({ key, by: 'hover' })}
-                          onPointerLeave={(event) => event.pointerType === 'mouse' && spot?.by === 'hover' && open && setSpot(null)}
+                          onClick={() => setSpot(spot?.key === key && spot.by !== 'hover' ? null : { key, by: 'click' })}
+                          onPointerEnter={(event) => event.pointerType === 'mouse' && spot?.key !== key && setSpot({ key, by: 'hover' })}
+                          onPointerLeave={(event) => event.pointerType === 'mouse' && spot?.by === 'hover' && spot.key === key && setSpot(null)}
                           onFocus={(event) => event.currentTarget.matches(':focus-visible') && setSpot({ key, by: 'focus' })}
-                          onBlur={() => spot?.by === 'focus' && open && setSpot(null)}
+                          onBlur={() => spot?.by === 'focus' && spot.key === key && setSpot(null)}
                         >
                           {n + 1}
                         </button>
@@ -301,6 +325,14 @@ export function ShowcaseTabs({ tabs, labels }: { tabs: ShowcaseTab[]; labels: La
                       </div>
                     );
                   })}
+                  {caption && (
+                    <p className="mkt-show-caption" aria-hidden="true">
+                      <strong>
+                        {step + 1}. {caption.title}
+                      </strong>{' '}
+                      {caption.body}
+                    </p>
+                  )}
                 </div>
                 <figcaption>{tab.image.kind === 'capture' ? labels.captionCapture : labels.captionIllustration}</figcaption>
               </figure>
@@ -316,8 +348,8 @@ export function ShowcaseTabs({ tabs, labels }: { tabs: ShowcaseTab[]; labels: La
                 <div className="mkt-show-details">
                   <p>{labels.details}</p>
                   <ol>
-                    {tab.hotspots.map((hotspot) => (
-                      <li key={hotspot.title}>
+                    {tab.hotspots.map((hotspot, n) => (
+                      <li key={hotspot.title} data-current={(index === active && tourKey === spotKey(tab.id, n)) || undefined}>
                         <strong>{hotspot.title}:</strong> {hotspot.body}
                       </li>
                     ))}

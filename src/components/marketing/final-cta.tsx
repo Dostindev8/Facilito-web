@@ -17,10 +17,10 @@ export function FinalCta() {
             <p className="mkt-final-title">{copy.final.title}</p>
             <p>{copy.final.body}</p>
             <div className="mkt-actions">
-              <a className="btn btn-light" href={site.registerPath}>
-                Empezar gratis
+              <Link className="btn btn-light" href={site.startPath}>
+                {copy.start.label}
                 <ArrowRight size={18} aria-hidden />
-              </a>
+              </Link>
               <Link className="btn btn-accent" href="/contacto">
                 Contacto
               </Link>

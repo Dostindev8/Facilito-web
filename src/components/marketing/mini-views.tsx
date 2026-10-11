@@ -1,4 +1,5 @@
-import { BarChart3, Check, Plus, Search } from 'lucide-react';
+import { BarChart3, Check, Search, UserCheck } from 'lucide-react';
+import { plans, TRIAL } from '@/content/pricing';
 import { formatRd } from '@/lib/format';
 
 /**
@@ -91,38 +92,64 @@ export function MiniInvoice() {
   );
 }
 
-export function MiniAccount() {
+export function MiniPlan() {
   return (
-    <div className="mkt-mini" aria-hidden="true">
-      <div className="mkt-mini-field">
-        <span>Tu nombre</span>
-        <strong>Ana Núñez</strong>
+    <div className="mkt-mini mkt-mini-invoice" aria-hidden="true">
+      <div className="mkt-mini-pay">
+        {plans.map((plan) => (
+          <span key={plan.id} className={`mkt-mini-chip${plan.featured ? ' is-on' : ''}`}>
+            {plan.name}
+          </span>
+        ))}
       </div>
-      <div className="mkt-mini-field">
-        <span>Negocio</span>
-        <strong>Colmado Ana</strong>
+      <div className="mkt-mini-row">
+        <span>Primer mes</span>
+        <strong>Gratis</strong>
       </div>
-      <span className="mkt-mini-btn">Crear cuenta</span>
+      <div className="mkt-mini-row mkt-mini-muted">
+        <span>Luego</span>
+        <span>US${plans[0]?.priceUsd} al mes</span>
+      </div>
     </div>
   );
 }
 
-export function MiniSetup() {
+export function MiniReady() {
   return (
     <div className="mkt-mini" aria-hidden="true">
-      <div className="mkt-mini-pay">
-        <span className="mkt-mini-chip is-on">Productos</span>
-        <span className="mkt-mini-chip">Clientes</span>
-        <span className="mkt-mini-chip">Comprobantes</span>
+      <div className="mkt-mini-field">
+        <span>Negocio</span>
+        <strong>Colmado Demo</strong>
+      </div>
+      <div className="mkt-mini-field">
+        <span>Plan</span>
+        <strong>Pro · {TRIAL.label}</strong>
+      </div>
+      <div className="mkt-mini-toast">
+        <UserCheck size={14} />
+        Usuario listo para entrar
+      </div>
+    </div>
+  );
+}
+
+export function MiniTransfer() {
+  return (
+    <div className="mkt-mini mkt-mini-invoice" aria-hidden="true">
+      <div className="mkt-mini-row">
+        <strong>Mensualidad Pro</strong>
+        <span className="mkt-mini-status">
+          <Check size={12} />
+          Recibida
+        </span>
+      </div>
+      <div className="mkt-mini-row mkt-mini-muted">
+        <span>Transferencia bancaria</span>
       </div>
       <div className="mkt-mini-row">
-        <span>Café 1 lb</span>
-        <strong>{formatRd(285)}</strong>
+        <span>Total</span>
+        <strong>US${plans[0]?.priceUsd}</strong>
       </div>
-      <span className="mkt-mini-add">
-        <Plus size={14} />
-        Agregar producto
-      </span>
     </div>
   );
 }

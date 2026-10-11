@@ -140,9 +140,9 @@ export function Hero({ videoReady }: { videoReady: boolean }) {
           </h1>
           <p className="mkt-hero-lead">{copy.hero.subtitle}</p>
           <div className="mkt-actions">
-            <a className="btn btn-primary" href={site.registerPath}>
+            <Link className="btn btn-primary" href={site.startPath}>
               {copy.hero.primary}
-            </a>
+            </Link>
             <Link className="btn btn-glass" href="/contacto?motivo=demo">
               {copy.hero.secondary}
             </Link>
