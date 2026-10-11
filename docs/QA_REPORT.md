@@ -1,5 +1,57 @@
 # QA — sitio público Facilito
 
+## Rediseño de la landing (11 oct 2026, rama `feat/landing-redesign`)
+
+Build de producción local, misma máquina. Decisiones 27–43 en `DECISIONS.md`.
+
+| Verificación | Resultado |
+|---|---|
+| `pnpm typecheck` | 0 errores |
+| `pnpm lint` (`--max-warnings=0`) | 0 |
+| `pnpm build` | sin errores ni avisos; `/` 6,97 kB, First Load 118 kB (igual que antes) |
+| Vitest | 26/26 |
+| Playwright | 41/41 (33 previas + 8 nuevas) |
+| axe WCAG 2.2 AA, 8 rutas | 0 violaciones serias o críticas |
+| Rutas del footer (HTTP) | 200 en las 9: `/`, `/features`, `/precios`, `/nosotros`, `/contacto`, `/contacto?motivo=demo`, `/legal/privacidad`, `/legal/terminos`, `/legal/cookies` |
+| Scroll horizontal | 0 a 375, 390, 414, 430, 768, 820, 1024, 1280, 1440, 1920 y 2560 |
+
+Pruebas e2e nuevas:
+
+- La píldora no aparece en ninguna ruta.
+- La copia del marquee tiene `aria-hidden`.
+- Con reduced motion, el marquee queda estático, con una sola copia y sin recortes.
+- El FAQ abre y cierra con teclado.
+- El enlace del crédito tiene `href`, `target` y `rel` correctos.
+- El botón flotante no tapa enlaces del footer.
+- «Cómo funciona» del menú lleva a la sección desde otra ruta.
+- 414 px en la matriz de desborde.
+
+Capturas en `docs/captures/redesign/` (home a 375, 414, 768, 1024, 1280 y 1440) y `docs/captures/redesign-reduced/` (reduced motion a 414 y 768). Se regeneran con `WIDTHS=… ROUTES=/ [REDUCED=1] node scripts/capture.mjs <carpeta>`.
+
+### Lighthouse móvil, simulado
+
+Base y rediseño se midieron intercalados contra dos servidores para que la carga de la máquina afectara a ambos por igual. La máquina tenía OneDrive sincronizando y Chrome abierto, así que los valores varían entre rondas.
+
+| Ronda | Base `/` | Rediseño `/` |
+|---|---|---|
+| Máquina más libre | 87–89 (LCP 3,2 s, TBT 230–280 ms, CLS 0) | 88–89 (LCP 3,2 s, TBT 220–270 ms, CLS 0,001) |
+| Máquina cargada | 75–82 | 67–82 |
+
+A11y 100, Best Practices 100 y SEO 92 en las 6 rutas.
+
+Ronda final de las 6 rutas (con carga): `/` 75, `/features` 89, `/precios` 88, `/contacto` 79, `/nosotros` 90, `/legal/privacidad` 92. CLS 0 en todas.
+
+Lo que se corrigió en esta ronda:
+
+- **CLS de la home de 0,047 a 0**: una nube se movía con el reflujo del hero.
+- **Layout inicial de la home de ~3,1 s a ~2,1 s** con CPU 4× más lenta, gracias a `content-visibility`. Antes de ese cambio, el rediseño bloqueaba más que la base: TBT 450–570 ms frente a 190–300 ms con throttling devtools.
+
+### Fuera de meta (Performance < 90)
+
+El LCP móvil simulado (3,2 s) ya estaba en la rama base y es igual en ambas. Sin throttling, el LCP real es el párrafo del hero y pinta a ~0,9 s. El simulador alarga el primer layout de la página, que con CPU 4× más lenta tarda ~0,8 s; la causa de ese costo no quedó aislada (las pruebas quitando `text-wrap`, el fondo o la vista previa dieron diferencias dentro del ruido). Pendiente: medir con PageSpeed Insights sobre la URL de Vercel antes de optimizar más.
+
+## Ronda anterior
+
 Medición: 8 oct 2026, rama `feat/website-3ds`, build de producción local (`next start`), Windows, Node 22.23.2, Chromium de Playwright 1.63.
 
 ## Pruebas
