@@ -10,6 +10,7 @@ import { site } from '@/lib/site';
 
 const LINKS = [
   { href: '/features', label: 'Producto' },
+  { href: '/#como-funciona', label: 'Cómo funciona' },
   { href: '/precios', label: 'Precios' },
   { href: '/nosotros', label: 'Nosotros' },
   { href: '/contacto', label: 'Contacto' },
@@ -21,6 +22,7 @@ export function SiteHeader() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [section, setSection] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const burgerRef = useRef<HTMLButtonElement>(null);
   const panelId = useId();
@@ -44,6 +46,29 @@ export function SiteHeader() {
   }, []);
 
   useEffect(() => setOpen(false), [pathname]);
+
+  // Home only: highlight the nav link whose section sits in the middle band of the viewport.
+  useEffect(() => {
+    setSection(null);
+    if (pathname !== '/' || !('IntersectionObserver' in window)) return;
+    const targets = [...document.querySelectorAll<HTMLElement>('[data-nav-section]')];
+    if (targets.length === 0) return;
+    const visible = new Set<HTMLElement>();
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          const el = entry.target as HTMLElement;
+          if (entry.isIntersecting) visible.add(el);
+          else visible.delete(el);
+        }
+        const current = targets.find((el) => visible.has(el));
+        setSection(current?.dataset.navSection ?? null);
+      },
+      { rootMargin: '-40% 0px -55% 0px' },
+    );
+    for (const el of targets) observer.observe(el);
+    return () => observer.disconnect();
+  }, [pathname]);
 
   useEffect(() => {
     if (!open) return;
@@ -96,7 +121,12 @@ export function SiteHeader() {
         </Link>
         <nav className="mkt-nav" aria-label="Principal">
           {LINKS.map((link) => (
-            <Link key={link.href} href={link.href} aria-current={isActive(link.href) ? 'page' : undefined}>
+            <Link
+              key={link.href}
+              href={link.href}
+              aria-current={isActive(link.href) ? 'page' : undefined}
+              data-active={section === link.href || undefined}
+            >
               {link.label}
             </Link>
           ))}
