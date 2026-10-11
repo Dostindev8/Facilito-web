@@ -76,3 +76,27 @@
 
     Con reduced motion queda una sola copia de 6 en filas.
 56. `pnpm audit` informa una vulnerabilidad alta en `braces`, que llega por `eslint-config-next` y solo se usa en lint. No hay versión parcheada publicada. `pnpm audit --prod` da 0. Se acepta hasta que Next actualice la cadena.
+
+## Modelo de pago y recorrido continuo (rama `feat/product-showcase`, 11 oct 2026)
+
+57. Modelo comercial confirmado por Logic Code Spot el 11 oct 2026, que reemplaza la decisión de precios «de referencia»:
+    - el servicio es de pago; los planes son Pro (US$16/mes) y Business (US$39/mes), y se quitó el plan Gratis;
+    - el primer mes es gratis en los dos planes;
+    - el cliente elige el plan y nos escribe; el equipo le prepara el usuario según ese plan;
+    - desde el segundo mes paga por transferencia bancaria, sin tarjeta y sin cobro automático.
+
+    `PRICES_CONFIRMED = true` en `src/content/pricing.ts`, que es la única fuente de planes, pasos y FAQ.
+58. El CTA principal pasa a ser «Prueba 1 mes gratis» y lleva a `/precios#planes` en el header, el menú móvil, el hero, el showcase, el cierre, el footer y `/features`. Los enlaces de registro a la app (`/login?tab=registro`) salen del sitio porque el usuario lo prepara el equipo. «Iniciar sesión» se queda para clientes activos.
+59. «Elegir Pro» y «Elegir Business» abren `/contacto?motivo=ventas&plan=<id>`. El formulario suma el campo opcional «Plan de interés» (`sin-definir`, `pro`, `business`), validado con zod igual que los demás. El correo al equipo incluye el plan en el asunto y en el cuerpo. Con un plan en la URL, el mensaje viene prellenado; un plan inventado en la URL se ignora.
+60. El JSON-LD de `SoftwareApplication` publica las dos ofertas en USD ahora que están confirmadas. Sigue sin `aggregateRating` porque no hay reseñas públicas.
+61. Los términos de uso dicen que el servicio es de pago mensual, con el primer mes gratis y pago por transferencia. No se agregaron políticas que el negocio no definió (suspensión, reembolsos, cambio de plan); quedan para el asesor legal.
+62. Las tarjetas de «Cómo funciona» siguen el flujo nuevo (elegir plan → usuario listo → vender → pagar por transferencia), con mini-vistas nuevas que usan las mismas clases.
+63. El recorrido de «Facilito por dentro» sustituye la decisión 52:
+    - recorre cada punto de cada pestaña cada 4,5 s y vuelve a empezar sin fin;
+    - corre en todos los tamaños, también en celulares;
+    - en escritorio abre el popover del punto actual; por debajo de 768 px muestra una leyenda sobre la imagen y marca el punto en la lista;
+    - elegir una pestaña lleva el recorrido allí en lugar de terminarlo;
+    - se pausa con hover del ratón, con foco de teclado, con un hotspot abierto por el visitante, fuera de pantalla y con la pestaña del navegador oculta;
+    - el botón «Pausar recorrido / Reanudar recorrido» cumple WCAG 2.2.2;
+    - con reduced motion no hay recorrido.
+64. Todos los paneles del showcase comparten la misma celda del grid; los inactivos llevan `visibility: hidden` vía `hidden`. Así la sección mide siempre lo del panel más alto y el cambio automático de pestaña no mueve la página (CLS 0, con prueba e2e). En contrapartida, las 5 capturas se descargan cuando la sección se acerca a la pantalla, aunque siguen siendo `lazy` respecto a la carga inicial.

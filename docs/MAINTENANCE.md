@@ -3,7 +3,8 @@
 ## Qué puede cambiar el equipo sin tocar lógica
 
 - Textos: `src/content/copy.es.ts`, `features.ts`, `pricing.ts`.
-- Precios: `src/content/pricing.ts`. Poner `PRICES_CONFIRMED = true` solo cuando la oferta sea real; eso quita el aviso de «precios de referencia».
+- Planes, precios, mes gratis, pasos de «Cómo empiezas» y FAQ de precios: `src/content/pricing.ts`. Es la única fuente: de ahí salen `/precios`, el FAQ de la home, las mini-vistas de «Cómo funciona», el selector «Plan de interés» del formulario y las ofertas del JSON-LD. Si agregas o quitas un plan, actualiza también `CONTACT_PLANS` en `src/lib/validations/contact-fields.ts` (un test falla si no coinciden).
+- Si cambia la forma de pago (hoy es transferencia) o la duración de la prueba, revisa `TRIAL`, `startSteps` y `pricingFaqs` en `pricing.ts`, los pasos de `copy.how` en `copy.es.ts` y la sección «Planes y pagos» de `/legal/terminos`.
 - Marca y enlaces: `src/lib/site.ts` y las variables de abajo.
 - Video del hero: con el mp4 fuente y ffmpeg instalado, `node scripts/build-hero-video.mjs <ruta-al-mp4>`. Genera en `public/media/` `facilito-hero-1080-loop.{mp4,webm}`, `facilito-hero-720-loop.{mp4,webm}` y el póster. No copies el original a `public/`. El hero monta `<video>` solo si existen los mp4; si no, se queda con el póster.
 
@@ -23,6 +24,8 @@ Para agregar o reemplazar una captura:
 Las ilustraciones de Ventas y Facturación salen de `scripts/showcase-mocks.mjs` (necesita el servidor en el 3100 para usar Poppins); el script imprime las posiciones de los `[data-spot]` para los hotspots.
 
 Nunca muestres e-CF ni los formatos 606/607/608 como disponibles: van en `soon`. El test lo verifica.
+
+El recorrido automático pasa por cada hotspot. El tiempo por punto es `SHOWCASE_STEP_MS` en `src/lib/motion-tokens.ts`. Cada pestaña necesita de 2 a 3 hotspots con `title` y `body` cortos, porque en celular se leen en una leyenda sobre la imagen.
 
 ## Variables
 
@@ -55,6 +58,6 @@ El repo está en Next 15.5.27. El soporte de la línea 15 termina el **21 de oct
 
 ```bash
 pnpm check        # typecheck, lint, unit, build
-pnpm e2e          # 54 pruebas: responsive 320–2560, menú, formulario, pestañas, marquee, CSP, SEO, axe
+pnpm e2e          # 57 pruebas: responsive 320–2560, menú, formulario y planes, pestañas y recorrido, marquee, CSP, SEO, axe
 pnpm audit --prod
 ```

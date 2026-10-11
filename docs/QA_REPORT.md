@@ -1,5 +1,44 @@
 # QA — sitio público Facilito
 
+## Modelo de pago con mes gratis y recorrido continuo (11 oct 2026, rama `feat/product-showcase`)
+
+Build de producción local, misma máquina. Decisiones 57–64 en `DECISIONS.md`.
+
+| Verificación | Antes | Ahora |
+|---|---|---|
+| `pnpm typecheck` / `pnpm lint` | 0 / 0 | 0 / 0 |
+| `/` en `pnpm build` | 9,49 kB, First Load 121 kB | 10,6 kB, First Load 122 kB |
+| `/precios` en `pnpm build` | — | 1,49 kB, First Load 108 kB |
+| Vitest | 31/31 | 36/36 (plan en el formulario, planes y textos de cobro) |
+| Playwright, servidor recién iniciado | 54/54 | 57/57 |
+| axe WCAG 2.2 AA, 8 rutas | 0 serias o críticas | 0 serias o críticas |
+| Scroll horizontal | 0 de 320 a 2560 y 667×375 | igual |
+
+Lighthouse móvil simulado (`docs/lighthouse/home-pricing-mobile-{1,2}.json` y `precios-pricing-mobile.json`):
+
+| | `/` antes | `/` ahora (2 corridas) | `/precios` ahora |
+|---|---|---|---|
+| Performance | 90 / 90 | 89 / 89 | 96 |
+| LCP | 3,3 s / 3,2 s | 3,3 s / 3,3 s | 2,6 s |
+| TBT | 150 / 170 ms | 200 / 190 ms | 80 ms |
+| CLS | 0 / 0 | 0 / 0 | 0 |
+| A11y, Best Practices, SEO | 100, 100, 92 | 100, 100, 92 | 100, 100, 92 |
+
+El TBT de la home subió unos 30 ms por el recorrido, que ahora también corre en móvil. El CLS sigue en 0 aunque las pestañas cambian solas.
+
+Pruebas e2e nuevas o cambiadas:
+
+- Todos los «Prueba 1 mes gratis» llevan a `/precios#planes`. No quedan «Empezar gratis» ni enlaces de registro a la app.
+- Ninguna ruta pública dice «Empezar gratis», «Plan Gratis», «no pide tarjeta» ni «Precios de referencia».
+- `/precios` muestra Pro US$16 y Business US$39, con «1 mes gratis, luego …», tarjetas de igual altura y los 4 pasos de «Cómo empiezas».
+- «Elegir Business» abre contacto con el plan, el motivo y el mensaje prellenados; un plan inventado en la URL se ignora.
+- Recorrido en escritorio: pasa del punto 1 al 2 y se queda quieto mientras está en pausa; al reanudarlo llega al 3.
+- Recorrido en móvil: pasa sola a la pestaña Ventas y el bloque de abajo no se mueve, tampoco al tocar otra pestaña.
+- A 320 px: la leyenda aparece, el punto actual queda marcado en la lista y no hay popovers.
+- El test de hotspots corre con reduced motion; el de teclado comprueba que el recorrido sigue después de elegir una pestaña.
+
+Capturas en `docs/captures/showcase/` (13 vistas) y `docs/captures/pricing/` (`/precios` y `/contacto?…&plan=pro` a 320, 375, 768, 1024 y 1440).
+
 ## Facilito por dentro, bandera RD y marquee (11 oct 2026, rama `feat/product-showcase`)
 
 Build de producción local, misma máquina. Decisiones 44–56 en `DECISIONS.md`.
