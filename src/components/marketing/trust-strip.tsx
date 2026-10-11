@@ -1,5 +1,4 @@
 import { FileCheck2, Headset, LockKeyhole, MapPin } from 'lucide-react';
-import { LogoMark } from '@/components/brand/logo';
 import { copy } from '@/content/copy.es';
 
 const ICONS = [MapPin, Headset, LockKeyhole, FileCheck2] as const;
@@ -12,28 +11,23 @@ export function TrustStrip() {
           {copy.trust.map((item, index) => {
             const Icon = ICONS[index] ?? MapPin;
             return (
-              <li key={item} data-reveal style={{ ['--reveal-i' as string]: index }}>
+              <li key={item.title} data-reveal style={{ ['--reveal-i' as string]: index }}>
                 <span className="mkt-trust-icon" aria-hidden="true">
                   <Icon size={20} />
                 </span>
-                {item}
+                <span className="mkt-trust-text">
+                  <strong>{item.title}</strong>
+                  {'detail' in item && (
+                    <>
+                      <span className="sr-only"> · </span>
+                      <span className="mkt-trust-detail">{item.detail}</span>
+                    </>
+                  )}
+                </span>
               </li>
             );
           })}
         </ul>
-      </div>
-    </section>
-  );
-}
-
-export function Manifesto() {
-  return (
-    <section className="mkt-manifesto" aria-label="Manifiesto">
-      <div className="mkt-wrap mkt-manifesto-inner">
-        <p data-reveal>{copy.manifesto}</p>
-        <span className="mkt-manifesto-mark" aria-hidden="true">
-          <LogoMark size={160} />
-        </span>
       </div>
     </section>
   );
