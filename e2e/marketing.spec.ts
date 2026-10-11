@@ -48,11 +48,27 @@ test('H1 exacto, con espacios visibles y "fácil" resaltado', async ({ page }) =
   }
 });
 
-test('CTA de registro e inicio de sesión apuntan a la app', async ({ page }) => {
+test('CTA "Prueba 1 mes gratis" lleva a los planes; iniciar sesión sigue en la app', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('link', { name: 'Empezar gratis' }).first()).toHaveAttribute('href', /\/login\?tab=registro$/);
+  const starts = page.getByRole('link', { name: 'Prueba 1 mes gratis' });
+  expect(await starts.count()).toBeGreaterThanOrEqual(3);
+  for (const link of await starts.all()) await expect(link).toHaveAttribute('href', '/precios#planes');
+  await expect(page.getByRole('link', { name: /Empezar gratis/ })).toHaveCount(0);
+  await expect(page.locator('a[href*="tab=registro"]')).toHaveCount(0);
   await expect(page.getByRole('link', { name: 'Iniciar sesión' }).first()).toHaveAttribute('href', /\/login$/);
   await expect(page.getByRole('link', { name: 'Pedir demo' }).first()).toHaveAttribute('href', '/contacto?motivo=demo');
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.locator('.mkt-header').getByRole('link', { name: 'Prueba 1 mes gratis' }).click();
+  await expect(page).toHaveURL(/\/precios#planes$/);
+  await expect(page.locator('#planes')).toBeInViewport();
+});
+
+test('ningún texto público dice que el servicio es gratis o que el registro no cobra', async ({ page }) => {
+  for (const route of publicRoutes) {
+    await page.goto(route);
+    const text = (await page.locator('body').textContent()) ?? '';
+    expect(text, route).not.toMatch(/Empezar gratis|Plan Gratis|no pide tarjeta|Precios de referencia|registro actual no/i);
+  }
 });
 
 test('"Cómo funciona": sin doble numeración y tarjetas de igual altura', async ({ page }) => {
@@ -214,14 +230,34 @@ test('enlace "Cómo funciona" del menú lleva a la sección', async ({ page }) =
   await expect(page.getByRole('heading', { name: 'Cómo funciona' })).toBeInViewport();
 });
 
-test('precios: mismos planes y montos, tarjetas de igual altura', async ({ page }) => {
+test('precios: Pro y Business con mes gratis, tarjetas de igual altura y pasos para empezar', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/precios');
+  await expect(page.locator('.mkt-trial-banner')).toContainText('Primer mes gratis en cualquier plan');
   const cards = page.locator('.mkt-price');
-  await expect(cards).toHaveCount(3);
-  await expect(cards.locator('.mkt-price-amount strong')).toHaveText(['US$0', 'US$16', 'US$39']);
+  await expect(cards).toHaveCount(2);
+  await expect(cards.locator('.mkt-price-amount strong')).toHaveText(['US$16', 'US$39']);
+  await expect(cards.locator('.mkt-price-trial')).toHaveText(['1 mes gratis, luego US$16 al mes', '1 mes gratis, luego US$39 al mes']);
+  await expect(page.getByRole('link', { name: 'Elegir Pro' })).toHaveAttribute('href', '/contacto?motivo=ventas&plan=pro');
+  await expect(page.getByRole('link', { name: 'Elegir Business' })).toHaveAttribute('href', '/contacto?motivo=ventas&plan=business');
   const heights = await cards.evaluateAll((els) => els.map((el) => Math.round(el.getBoundingClientRect().height)));
   expect(Math.max(...heights) - Math.min(...heights)).toBeLessThanOrEqual(1);
+  await expect(page.getByRole('heading', { name: 'Cómo empiezas' })).toBeVisible();
+  await expect(page.locator('.mkt-start li')).toHaveCount(4);
+});
+
+test('elegir un plan abre contacto con el plan y el mensaje ya puestos', async ({ page }) => {
+  await page.goto('/precios');
+  await page.getByRole('link', { name: 'Elegir Business' }).click();
+  await expect(page).toHaveURL(/\/contacto\?motivo=ventas&plan=business$/);
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Contacto');
+  await expect(page.getByText('te preparamos el usuario del plan Business')).toBeVisible();
+  await expect(page.getByLabel('Plan de interés')).toHaveValue('business');
+  await expect(page.getByLabel('Motivo')).toHaveValue('ventas');
+  await expect(page.getByLabel('Mensaje')).toHaveValue('Quiero el plan Business con el primer mes gratis.');
+  await page.goto('/contacto?plan=inventado');
+  await expect(page.getByLabel('Plan de interés')).toHaveValue('sin-definir');
+  await expect(page.getByLabel('Mensaje')).toHaveValue('');
 });
 
 test('el enlace "Ver cómo funciona" lleva a la sección', async ({ page }) => {
@@ -426,12 +462,14 @@ test('"Facilito por dentro": pestañas con teclado (flechas, Home, End) y roving
   await expectActive('Reportes', 'Tus números en orden');
   await page.keyboard.press('Home');
   await expectActive('Inicio', 'Tu negocio de un vistazo');
-  // Manual control ends the guided tour for good.
-  await expect(page.locator('.mkt-show-tour')).toHaveCount(0);
+  // Choosing a tab moves the tour there; it does not end it.
+  await expect(page.locator('.mkt-show-tour')).toHaveCount(1);
 });
 
-test('"Facilito por dentro": hotspots abren con foco, hover y toque; Esc cierra', async ({ page }) => {
-  await page.setViewportSize({ width: 1280, height: 900 });
+test('"Facilito por dentro": hotspots abren con foco, hover y toque; Esc cierra', async ({ browser }) => {
+  // Reduced motion: no tour, so only the visitor opens popovers.
+  const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 1280, height: 900 } });
+  const page = await context.newPage();
   await page.goto('/');
   const panel = page.getByRole('tabpanel');
   await panel.scrollIntoViewIfNeeded();
@@ -456,6 +494,7 @@ test('"Facilito por dentro": hotspots abren con foco, hover y toque; Esc cierra'
   await expect(pop).toBeVisible();
   await page.locator('#por-dentro-title').click();
   await expect(pop).toBeHidden();
+  await context.close();
 });
 
 test('"Facilito por dentro" en móvil: chips con scroll propio, lista de detalles y sin overflow', async ({ page }) => {
@@ -474,7 +513,11 @@ test('"Facilito por dentro" en móvil: chips con scroll propio, lista de detalle
   }));
   expect(sizes.page).toBeLessThanOrEqual(0);
   for (const height of sizes.tabs) expect(height).toBeGreaterThanOrEqual(44);
-  await expect(page.locator('.mkt-show-tour')).toHaveCount(0);
+  // The tour also runs on phones: caption over the screen and the current item marked in the list.
+  await expect(page.locator('.mkt-show-tour')).toHaveCount(1);
+  await expect(page.getByRole('tabpanel').locator('.mkt-show-caption')).toBeVisible();
+  await expect(page.getByRole('tabpanel').locator('.mkt-show-details li[data-current]')).toHaveCount(1);
+  await expect(page.getByRole('tabpanel').locator('.mkt-show-pop:visible')).toHaveCount(0);
 });
 
 test('"Facilito por dentro": imágenes del mismo origen, con dimensiones y alt; ilustraciones rotuladas', async ({ page }) => {
@@ -511,14 +554,42 @@ test('"Facilito por dentro": sin recorrido automático con reduced motion', asyn
   await context.close();
 });
 
-test('"Facilito por dentro": el recorrido se puede detener y no vuelve', async ({ page }) => {
+test('"Facilito por dentro": el recorrido avanza punto por punto y se puede pausar y reanudar', async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
   await page.goto('/');
   await page.locator('#por-dentro').scrollIntoViewIfNeeded();
-  const stop = page.getByRole('button', { name: 'Detener recorrido' });
-  await expect(stop).toBeVisible();
-  await stop.click();
-  await expect(page.locator('.mkt-show-tour')).toHaveCount(0);
+  await page.mouse.move(2, 2);
+  const panel = page.getByRole('tabpanel');
+  await expect(panel.locator('#show-inicio-1')).toBeVisible();
+  await expect(panel.locator('#show-inicio-2')).toBeVisible({ timeout: 8000 });
+  await expect(panel.locator('#show-inicio-1')).toBeHidden();
+  const toggle = page.locator('.mkt-show-stop');
+  await expect(toggle).toHaveText('Pausar recorrido');
+  await toggle.focus();
+  await page.keyboard.press('Enter');
+  await expect(toggle).toHaveText('Reanudar recorrido');
+  await toggle.blur();
+  await page.waitForTimeout(5500);
+  await expect(panel.locator('#show-inicio-2')).toBeVisible();
+  await toggle.focus();
+  await page.keyboard.press('Enter');
+  await toggle.blur();
+  await expect(toggle).toHaveText('Pausar recorrido');
+  await expect(panel.locator('#show-inicio-3')).toBeVisible({ timeout: 8000 });
+});
+
+test('"Facilito por dentro" en móvil: el recorrido pasa a la siguiente pestaña sin mover la página', async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/');
+  await page.locator('.mkt-show-grid').evaluate((el) => window.scrollTo(0, el.getBoundingClientRect().top + window.scrollY - 80));
+  const ctaTop = () => page.locator('.mkt-show-cta').evaluate((el) => Math.round(el.getBoundingClientRect().top + window.scrollY));
+  const before = await ctaTop();
+  await expect(page.getByRole('tab', { name: /^Ventas/ })).toHaveAttribute('aria-selected', 'true', { timeout: 20_000 });
+  await expect(page.getByRole('tabpanel').locator('.mkt-show-caption')).toContainText('1.');
+  expect(await ctaTop()).toBe(before);
+  await page.getByRole('tab', { name: /^Reportes/ }).click();
+  expect(await ctaTop()).toBe(before);
 });
 
 test('headers de seguridad y CSP con nonce en cada ruta', async ({ request }) => {

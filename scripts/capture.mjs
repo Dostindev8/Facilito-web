@@ -42,7 +42,7 @@ for (const { width, height } of viewports) {
     await page.waitForTimeout(400);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     report.push({ width, height, route, overflow });
-    const base = route === '/' ? 'home' : route.slice(1).replace(/\//g, '-');
+    const base = route === '/' ? 'home' : route.slice(1).replace(/[/?&=]+/g, '-');
     const size = preset.extra?.some((v) => v.width === width && v.height === height) ? `${width}x${height}` : `${width}`;
     if (preset.selector) {
       const section = page.locator(preset.selector);
