@@ -1,19 +1,32 @@
-import { MiniAccount, MiniCheckout, MiniReport, MiniSetup } from './mini-views';
+import { MiniCheckout, MiniPlan, MiniReady, MiniTransfer } from './mini-views';
 import { SectionHeading } from '@/components/ui/section-heading';
 import { copy } from '@/content/copy.es';
 
-const VIEWS = [MiniAccount, MiniSetup, MiniCheckout, MiniReport] as const;
+const VIEWS = [MiniPlan, MiniReady, MiniCheckout, MiniTransfer] as const;
 
 export function HowItWorks() {
   return (
-    <section className="mkt-section mkt-section-soft" id={copy.how.id} aria-labelledby="como">
+    <section
+      className="mkt-section mkt-section-soft mkt-anchor"
+      id={copy.how.id}
+      data-nav-section={`/#${copy.how.id}`}
+      aria-labelledby="como"
+    >
       <div className="mkt-wrap">
-        <SectionHeading id="como" eyebrow={copy.how.eyebrow} title={copy.how.title} lead={copy.how.lead} />
-        <ol className="mkt-steps">
+        <SectionHeading
+          id="como"
+          index={3}
+          eyebrow={copy.how.eyebrow}
+          title={copy.how.title}
+          emphasis={copy.how.emphasis}
+          lead={copy.how.lead}
+        />
+        {/* The list reveals as one block: the connector line draws, then the steps follow in order. */}
+        <ol className="mkt-steps" data-reveal>
           {copy.how.steps.map((step, index) => {
-            const View = VIEWS[index] ?? MiniAccount;
+            const View = VIEWS[index] ?? MiniPlan;
             return (
-              <li key={step.n} className="mkt-step" data-reveal style={{ ['--reveal-i' as string]: index }}>
+              <li key={step.n} className="mkt-step" style={{ ['--step-i' as string]: index }}>
                 <span className="mkt-step-n" aria-hidden="true">
                   {step.n}
                 </span>

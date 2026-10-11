@@ -1,9 +1,12 @@
 import { preload } from 'react-dom';
+import { CapabilityMarquee } from '@/components/marketing/capability-marquee';
 import { FinalCta } from '@/components/marketing/final-cta';
 import { Hero } from '@/components/marketing/hero';
+import { HomeFaq } from '@/components/marketing/home-faq';
 import { HowItWorks } from '@/components/marketing/how-it-works';
 import { JsonLd } from '@/components/marketing/json-ld';
-import { Manifesto, TrustStrip } from '@/components/marketing/trust-strip';
+import { ProductShowcase } from '@/components/marketing/product-showcase';
+import { TrustStrip } from '@/components/marketing/trust-strip';
 import { Pillars } from '@/components/marketing/pillars';
 import { organizationJsonLd, pageMeta, softwareJsonLd, websiteJsonLd } from '@/lib/seo';
 import { HERO_POSTER, heroVideoAvailable } from '@/lib/hero-media';
@@ -29,9 +32,11 @@ export default function HomePage() {
       <JsonLd data={softwareJsonLd()} />
       <Hero videoReady={heroVideoAvailable()} />
       <Pillars />
+      <CapabilityMarquee />
+      <ProductShowcase />
       <HowItWorks />
       <TrustStrip />
-      <Manifesto />
+      <HomeFaq />
       <FinalCta />
     </>
   );

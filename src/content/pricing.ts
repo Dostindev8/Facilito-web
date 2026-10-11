@@ -1,13 +1,20 @@
 /**
- * CONFIRMAR PRECIOS
- * El producto no publica planes ni tarifas (revisión del repo, 7 oct 2026).
- * Estas cifras son referencia del brief comercial, no una oferta vigente.
- * No mostrarlas como precio cerrado hasta que Logic Code Spot las confirme.
+ * Precios confirmados por Logic Code Spot (11 oct 2026): Pro US$16/mes y Business US$39/mes,
+ * primer mes gratis en ambos. El equipo prepara el usuario según el plan y el pago es por
+ * transferencia bancaria. No hay cobro automático ni tarjeta.
  */
-export const PRICES_CONFIRMED = false;
+export const PRICES_CONFIRMED = true;
+
+export const TRIAL = {
+  label: '1 mes gratis',
+  /** Short promise reused in CTAs and notes. */
+  note: 'Primer mes gratis en cualquier plan. Pagas por transferencia desde el segundo mes.',
+} as const;
+
+export type PlanId = 'pro' | 'business';
 
 export interface Plan {
-  id: 'gratis' | 'pro' | 'business';
+  id: PlanId;
   name: string;
   priceUsd: number;
   blurb: string;
@@ -18,48 +25,58 @@ export interface Plan {
 
 export const plans: readonly Plan[] = [
   {
-    id: 'gratis',
-    name: 'Gratis',
-    priceUsd: 0,
-    blurb: 'Para abrir la cuenta y probar el panel.',
-    items: ['Registro sin tarjeta', 'Ventas, inventario y facturas del producto actual', 'Un negocio'],
-    cta: 'Empezar gratis',
-    featured: false,
-  },
-  {
     id: 'pro',
     name: 'Pro',
     priceUsd: 16,
-    blurb: 'Referencia para un negocio que ya vende todos los días.',
-    items: ['Todo lo del panel actual', 'Reportes', 'Soporte por el canal de contacto'],
-    cta: 'Pedir este plan',
+    blurb: 'Para el negocio que vende todos los días y quiere sus números en orden.',
+    items: ['Ventas, inventario, clientes y facturas', 'Reportes por período', 'Usuario preparado por nuestro equipo', 'Soporte por el canal de contacto'],
+    cta: 'Elegir Pro',
     featured: true,
   },
   {
     id: 'business',
     name: 'Business',
     priceUsd: 39,
-    blurb: 'Referencia para quien opera con más de un punto.',
+    blurb: 'Para quien quiere acompañamiento en la puesta en marcha y respuesta prioritaria.',
     items: ['Todo lo de Pro', 'Acompañamiento para la puesta en marcha', 'Prioridad de respuesta'],
-    cta: 'Hablar con nosotros',
+    cta: 'Elegir Business',
     featured: false,
   },
 ];
 
+export const PLAN_IDS = plans.map((plan) => plan.id) as readonly PlanId[];
+
+export function planById(id: string | undefined): Plan | undefined {
+  return plans.find((plan) => plan.id === id);
+}
+
+/** How a new customer starts; shown on /precios. */
+export const startSteps = [
+  { title: 'Elige tu plan', body: 'Pro o Business. El primer mes no pagas nada.' },
+  { title: 'Escríbenos', body: 'Por el formulario o WhatsApp, con los datos de tu negocio.' },
+  { title: 'Te preparamos el usuario', body: 'Activamos tu cuenta según el plan y te enviamos el acceso.' },
+  { title: 'Paga desde el segundo mes', body: 'Por transferencia bancaria, mes a mes, para seguir usando el sistema.' },
+] as const;
+
 export const pricingFaqs = [
   {
-    question: '¿Estos precios ya están vigentes?',
+    question: '¿Cuánto cuesta Facilito?',
+    answer: 'Pro cuesta US$16 al mes y Business US$39 al mes. En los dos planes el primer mes es gratis.',
+  },
+  {
+    question: '¿Cómo funciona el mes gratis?',
     answer:
-      'No. Son una referencia mientras Logic Code Spot confirma la oferta. El registro que existe hoy no cobra ni pide tarjeta en el formulario.',
+      'Eliges el plan y nos escribes. Preparamos tu usuario según ese plan y lo usas un mes completo sin pagar. Si al terminar quieres seguir, pagas la mensualidad.',
+  },
+  {
+    question: '¿Cómo se paga?',
+    answer:
+      'Por transferencia bancaria, por el momento. Te damos los datos de pago al activar tu cuenta. No pedimos tarjeta y no hay cobros automáticos: nada se cobra sin que tú hagas la transferencia.',
   },
   {
     question: '¿Facilito ya envía comprobantes electrónicos a la DGII?',
     answer:
       'No. Hoy puedes emitir facturas en el panel y configurar secuencias de comprobantes. El envío electrónico e-CF está marcado como próximamente y el servicio fiscal del producto sigue en modo de prueba, apagado.',
-  },
-  {
-    question: '¿Necesito tarjeta para crear la cuenta?',
-    answer: 'No. El formulario de registro pide tus datos y los del negocio. No pide tarjeta.',
   },
   {
     question: '¿Puedo entrar con Google?',
@@ -72,6 +89,6 @@ export const pricingFaqs = [
   },
   {
     question: '¿Hay contrato anual?',
-    answer: 'No hay una oferta anual publicada. Cuando exista, se verá en esta página.',
+    answer: 'No. Pagas mes a mes. No hay una oferta anual publicada; cuando exista, se verá en esta página.',
   },
 ] as const;

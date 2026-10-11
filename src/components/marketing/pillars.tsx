@@ -9,9 +9,16 @@ const VIEWS = [MiniSale, MiniStock, MiniInvoice] as const;
 
 export function Pillars() {
   return (
-    <section className="mkt-section mkt-after-hero" aria-labelledby="pilares">
+    <section className="mkt-section mkt-after-hero" id="producto" data-nav-section="/features" aria-labelledby="pilares">
       <div className="mkt-wrap">
-        <SectionHeading id="pilares" eyebrow={copy.pillarsIntro.eyebrow} title="Lo que ya puedes hacer" lead={copy.pillarsIntro.lead} />
+        <SectionHeading
+          id="pilares"
+          index={1}
+          eyebrow={copy.pillarsIntro.eyebrow}
+          title={copy.pillarsIntro.title}
+          emphasis={copy.pillarsIntro.emphasis}
+          lead={copy.pillarsIntro.lead}
+        />
         <div className="mkt-bento">
           {copy.pillars.map((pillar, index) => {
             const Icon = ICONS[index] ?? Receipt;

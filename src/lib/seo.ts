@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { plans, PRICES_CONFIRMED } from '../content/pricing';
 import { absoluteUrl, isIndexable, site, siteUrl } from './site';
 
 export function robotsMeta(): Metadata['robots'] {
@@ -55,7 +56,7 @@ export function organizationJsonLd(): Record<string, unknown> {
   };
 }
 
-/** No price and no aggregateRating: neither is a verified public fact. */
+/** Offers come from the confirmed plans; no aggregateRating because there are no public reviews. */
 export function softwareJsonLd(): Record<string, unknown> {
   return {
     '@context': 'https://schema.org',
@@ -65,7 +66,15 @@ export function softwareJsonLd(): Record<string, unknown> {
     operatingSystem: 'Web',
     description: site.description,
     url: siteUrl().toString(),
-    offers: undefined,
+    offers: PRICES_CONFIRMED
+      ? plans.map((plan) => ({
+          '@type': 'Offer',
+          name: plan.name,
+          price: String(plan.priceUsd),
+          priceCurrency: 'USD',
+          url: absoluteUrl('/precios'),
+        }))
+      : undefined,
     provider: { '@type': 'Organization', name: site.maker },
   };
 }

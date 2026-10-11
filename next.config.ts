@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs';
+import path from 'node:path';
 import type { NextConfig } from 'next';
 
 const APP_URL = (process.env.NEXT_PUBLIC_APP_URL || 'https://facilitord.vercel.app').replace(/\/+$/, '');
@@ -19,11 +21,16 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   reactStrictMode: true,
+  env: {
+    // Resolved at build time: serverless functions on Vercel do not see public/ at runtime.
+    NEXT_PUBLIC_LCS_LOGO: existsSync(path.join(process.cwd(), 'public', 'brand', 'logic-code-spot.png')) ? '1' : '0',
+  },
   experimental: {
     inlineCss: true,
     serverActions: { bodySizeLimit: '32kb' },
   },
   images: {
+    formats: ['image/avif', 'image/webp'],
     remotePatterns: [],
   },
   async redirects() {

@@ -1,0 +1,49 @@
+{
+  "dashboard": {
+    "width": 1024,
+    "height": 493,
+    "widths": [
+      640,
+      1024
+    ],
+    "blur": "data:image/webp;base64,UklGRkQAAABXRUJQVlA4IDgAAADQAQCdASoQAAgAA4BaJZQAAueGxaumgAD+9hXPfVo9ti1Bkygq5HucjrCEYBzFygD1Nnnq80CAAA=="
+  },
+  "facturacion": {
+    "width": 1600,
+    "height": 766,
+    "widths": [
+      640,
+      1024,
+      1600
+    ],
+    "blur": "data:image/webp;base64,UklGRjIAAABXRUJQVlA4ICYAAACQAQCdASoQAAgAA4BaJZwAApz7FAAA/vcRjDcaXL+2d2IT67hAAA=="
+  },
+  "inventario-importar-csv": {
+    "width": 1024,
+    "height": 481,
+    "widths": [
+      640,
+      1024
+    ],
+    "blur": "data:image/webp;base64,UklGRkAAAABXRUJQVlA4IDQAAADQAQCdASoQAAgAA4BaJYwC7AD0td54oAD+7WHjE38EPIkwXy6ERAJh12+6sIa6cS4fyaAA"
+  },
+  "reportes": {
+    "width": 1024,
+    "height": 486,
+    "widths": [
+      640,
+      1024
+    ],
+    "blur": "data:image/webp;base64,UklGRjYAAABXRUJQVlA4ICoAAACQAQCdASoQAAgAA4BaJZwAAudZtgAA/vcTEoW8EDnTUlCGSz19uTTiEAA="
+  },
+  "ventas-pos": {
+    "width": 1600,
+    "height": 766,
+    "widths": [
+      640,
+      1024,
+      1600
+    ],
+    "blur": "data:image/webp;base64,UklGRjYAAABXRUJQVlA4ICoAAACwAQCdASoQAAgAA4BaJZwAAudfYH5YAP73B1wDdk4slQ7NhU3asEAAAAA="
+  }
+}

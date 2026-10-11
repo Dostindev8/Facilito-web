@@ -13,3 +13,5 @@ coverage/
 .DS_Store
 Thumbs.db
 *.log
+# Unredacted source captures: may contain real customer data, never commit.
+public/product/_raw/

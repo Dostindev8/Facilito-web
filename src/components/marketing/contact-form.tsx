@@ -4,14 +4,28 @@ import { useActionState, useEffect, useId, useRef, useState, type FormEvent } fr
 import { CheckCircle2, Loader2, Send } from 'lucide-react';
 import { submitContact } from '@/app/contacto/actions';
 import { contactFieldErrors } from '@/lib/validations/contact';
-import { BUSINESS_TYPE_OPTIONS, CONTACT_LIMITS, CONTACT_MOTIVES, contactIdle } from '@/lib/validations/contact-fields';
+import { plans, TRIAL } from '@/content/pricing';
+import { BUSINESS_TYPE_OPTIONS, CONTACT_LIMITS, CONTACT_MOTIVES, CONTACT_PLANS, contactIdle } from '@/lib/validations/contact-fields';
 
 const MOTIVE_LABEL = { demo: 'Pedir demo', ventas: 'Ventas', soporte: 'Soporte' } as const;
+const PLAN_OPTIONS = [
+  { value: 'sin-definir', label: 'Todavía no sé' },
+  ...plans.map((plan) => ({ value: plan.id, label: `${plan.name} · US$${plan.priceUsd}/mes (${TRIAL.label})` })),
+] satisfies { value: (typeof CONTACT_PLANS)[number]; label: string }[];
 type Motive = (typeof CONTACT_MOTIVES)[number];
-type FieldName = 'nombre' | 'telefono' | 'email' | 'tipoNegocio' | 'motivo' | 'mensaje';
-const FIELD_ORDER: readonly FieldName[] = ['nombre', 'telefono', 'email', 'tipoNegocio', 'motivo', 'mensaje'];
+type Plan = (typeof CONTACT_PLANS)[number];
+type FieldName = 'nombre' | 'telefono' | 'email' | 'tipoNegocio' | 'motivo' | 'plan' | 'mensaje';
+const FIELD_ORDER: readonly FieldName[] = ['nombre', 'telefono', 'email', 'tipoNegocio', 'motivo', 'plan', 'mensaje'];
 
-export function ContactForm({ initialMotivo }: { initialMotivo: Motive }) {
+export function ContactForm({
+  initialMotivo,
+  initialPlan = 'sin-definir',
+  initialMessage = '',
+}: {
+  initialMotivo: Motive;
+  initialPlan?: Plan;
+  initialMessage?: string;
+}) {
   const [state, action, pending] = useActionState(submitContact, contactIdle);
   const formRef = useRef<HTMLFormElement>(null);
   const statusRef = useRef<HTMLParagraphElement>(null);
@@ -22,7 +36,8 @@ export function ContactForm({ initialMotivo }: { initialMotivo: Motive }) {
     email: '',
     tipoNegocio: 'colmado',
     motivo: initialMotivo,
-    mensaje: '',
+    plan: initialPlan,
+    mensaje: initialMessage,
   });
   const [clientErrors, setClientErrors] = useState<Record<string, string>>({});
   const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
@@ -181,6 +196,18 @@ export function ContactForm({ initialMotivo }: { initialMotivo: Motive }) {
           </select>
           {errorFor('motivo')}
         </div>
+      </div>
+
+      <div className="mkt-field">
+        <label htmlFor={`${uid}-plan`}>Plan de interés</label>
+        <select {...fieldProps('plan')} onChange={(event) => update('plan', event.target.value)}>
+          {PLAN_OPTIONS.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+        {errorFor('plan')}
       </div>
 
       <div className="mkt-field">

@@ -2,16 +2,17 @@
 
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
-import { ArrowDown, Cloud, MapPin, ShieldCheck, Zap } from 'lucide-react';
+import { ArrowDown, Cloud, ShieldCheck, Zap } from 'lucide-react';
 import { HeroPreview } from './hero-preview';
 import { HeroVideo } from './hero-video';
+import { FlagDO } from '@/components/ui/flag-do';
 import { copy } from '@/content/copy.es';
 import { HERO_PARALLAX_PX } from '@/lib/motion-tokens';
 import { site } from '@/lib/site';
 
 type Conn = { saveData?: boolean; effectiveType?: string };
 
-const TRUST_ICONS = [ShieldCheck, Zap, Cloud, MapPin] as const;
+const TRUST_ICONS = [ShieldCheck, Zap, Cloud, FlagDO] as const;
 
 /** Deterministic particle field (no Math.random, so server and client markup match). */
 const PARTICLES = Array.from({ length: 24 }, (_, i) => ({
@@ -132,10 +133,6 @@ export function Hero({ videoReady }: { videoReady: boolean }) {
 
       <div className="mkt-wrap mkt-hero-grid">
         <div className="mkt-hero-copy">
-          <p className="mkt-kicker">
-            <span className="mkt-kicker-dot" aria-hidden="true" />
-            Facilito · {site.maker}
-          </p>
           <h1 id="hero-title" className="mkt-hero-title">
             {before}
             <span className="mkt-hl">{highlight}</span>
@@ -143,9 +140,9 @@ export function Hero({ videoReady }: { videoReady: boolean }) {
           </h1>
           <p className="mkt-hero-lead">{copy.hero.subtitle}</p>
           <div className="mkt-actions">
-            <a className="btn btn-primary" href={site.registerPath}>
+            <Link className="btn btn-primary" href={site.startPath}>
               {copy.hero.primary}
-            </a>
+            </Link>
             <Link className="btn btn-glass" href="/contacto?motivo=demo">
               {copy.hero.secondary}
             </Link>

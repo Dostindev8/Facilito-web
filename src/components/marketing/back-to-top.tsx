@@ -6,22 +6,32 @@ import { ArrowUp } from 'lucide-react';
 const SHOW_AFTER_PX = 720;
 
 export function BackToTop() {
-  const [visible, setVisible] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [footerInView, setFooterInView] = useState(false);
+  // The footer has its own "Volver arriba"; hiding the floating button there keeps it off the footer links.
+  const visible = scrolled && !footerInView;
 
   useEffect(() => {
     let frame = 0;
     const update = () => {
       frame = 0;
-      setVisible(window.scrollY > SHOW_AFTER_PX);
+      setScrolled(window.scrollY > SHOW_AFTER_PX);
     };
     const onScroll = () => {
       if (!frame) frame = window.requestAnimationFrame(update);
     };
     update();
     window.addEventListener('scroll', onScroll, { passive: true });
+    const footer = document.querySelector('.mkt-footer');
+    const observer =
+      footer && 'IntersectionObserver' in window
+        ? new IntersectionObserver(([entry]) => setFooterInView(Boolean(entry?.isIntersecting)))
+        : null;
+    if (footer) observer?.observe(footer);
     return () => {
       window.removeEventListener('scroll', onScroll);
       if (frame) window.cancelAnimationFrame(frame);
+      observer?.disconnect();
     };
   }, []);
 
