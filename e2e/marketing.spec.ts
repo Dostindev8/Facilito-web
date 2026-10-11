@@ -2,7 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
 
 const publicRoutes = ['/', '/features', '/precios', '/contacto', '/nosotros', '/legal/privacidad', '/legal/terminos', '/legal/cookies'];
-const matrix = [375, 390, 430, 768, 820, 1024, 1280, 1440, 1920, 2560];
+const matrix = [375, 390, 414, 430, 768, 820, 1024, 1280, 1440, 1920, 2560];
 const HERO_TITLE = 'Tu negocio, más fácil cada día.';
 
 test.beforeEach(async ({ context }) => {
@@ -78,12 +78,92 @@ test('header y contenido comparten el mismo contenedor', async ({ page }) => {
         return { x: rect.x, width: rect.width };
       });
     const logo = await box('.mkt-header-logo');
-    const kicker = await box('.mkt-kicker');
+    const title = await box('.mkt-hero-title');
     const trust = await box('.mkt-hero-trust');
-    expect(kicker.width, `ancho ${width}`).toBeGreaterThan(0);
-    expect(Math.abs(logo.x - kicker.x), `ancho ${width}`).toBeLessThanOrEqual(1);
-    expect(Math.abs(trust.x - kicker.x), `ancho ${width}`).toBeLessThanOrEqual(1);
+    expect(title.width, `ancho ${width}`).toBeGreaterThan(0);
+    expect(Math.abs(logo.x - title.x), `ancho ${width}`).toBeLessThanOrEqual(1);
+    expect(Math.abs(trust.x - title.x), `ancho ${width}`).toBeLessThanOrEqual(1);
   }
+});
+
+test('la píldora "FACILITO · LOGIC CODE SPOT" no aparece en ninguna ruta', async ({ page }) => {
+  for (const route of publicRoutes) {
+    await page.goto(route);
+    await expect(page.locator('.mkt-kicker')).toHaveCount(0);
+    expect(await page.locator('body').innerText()).not.toMatch(/FACILITO\s*·\s*LOGIC CODE SPOT/i);
+  }
+});
+
+test('marquee: la copia duplicada está oculta a lectores de pantalla', async ({ page }) => {
+  await page.goto('/');
+  const tracks = page.locator('.mkt-marquee-track');
+  await expect(tracks).toHaveCount(2);
+  await expect(tracks.nth(0)).not.toHaveAttribute('aria-hidden', /.*/);
+  await expect(tracks.nth(1)).toHaveAttribute('aria-hidden', 'true');
+});
+
+test('marquee con reduced motion: estático, una sola copia y sin recortes', async ({ browser }) => {
+  const context = await browser.newContext({ reducedMotion: 'reduce', viewport: { width: 375, height: 800 } });
+  const page = await context.newPage();
+  await page.goto('/');
+  const state = await page.evaluate(() => {
+    const marquee = document.querySelector('.mkt-marquee')!;
+    return {
+      animation: getComputedStyle(document.querySelector('.mkt-marquee-inner')!).animationName,
+      duplicate: getComputedStyle(document.querySelectorAll('.mkt-marquee-track')[1]!).display,
+      clipped: marquee.scrollWidth > marquee.clientWidth,
+    };
+  });
+  expect(state).toEqual({ animation: 'none', duplicate: 'none', clipped: false });
+  await context.close();
+});
+
+test('FAQ de la home se abre y cierra con teclado', async ({ page }) => {
+  await page.goto('/');
+  const first = page.locator('.mkt-acc').first();
+  const summary = first.locator('summary');
+  await summary.scrollIntoViewIfNeeded();
+  await summary.focus();
+  await page.keyboard.press('Enter');
+  await expect(first).toHaveAttribute('open', '');
+  await page.keyboard.press('Enter');
+  await expect(first).not.toHaveAttribute('open', /.*/);
+});
+
+test('crédito de Logic Code Spot en el footer', async ({ page }) => {
+  await page.goto('/');
+  const credit = page.getByRole('link', { name: /Logic Code Spot, creadores de Facilito/ });
+  await expect(credit).toHaveAttribute('href', 'https://logic-codespot-com.vercel.app/');
+  await expect(credit).toHaveAttribute('target', '_blank');
+  await expect(credit).toHaveAttribute('rel', 'noopener noreferrer');
+  await expect(page.locator('.mkt-footer-watermark')).toHaveAttribute('aria-hidden', 'true');
+});
+
+test('el botón flotante "volver arriba" no tapa enlaces del footer', async ({ page }) => {
+  for (const width of [375, 1440]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto('/');
+    await page.evaluate(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'instant' }));
+    await expect(page.locator('.mkt-top')).not.toHaveAttribute('data-visible', /.*/);
+    const overlaps = await page.evaluate(() => {
+      const wa = document.querySelector('.mkt-wa')?.getBoundingClientRect();
+      if (!wa) return [];
+      return [...document.querySelectorAll('.mkt-footer a')]
+        .filter((el) => !el.closest('.mkt-wa'))
+        .map((el) => el.getBoundingClientRect())
+        .filter((r) => r.width > 0 && r.left < wa.right && r.right > wa.left && r.top < wa.bottom && r.bottom > wa.top)
+        .map((r) => `${Math.round(r.left)},${Math.round(r.top)}`);
+    });
+    expect(overlaps, `ancho ${width}`).toEqual([]);
+  }
+});
+
+test('enlace "Cómo funciona" del menú lleva a la sección', async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
+  await page.goto('/precios');
+  await page.getByRole('navigation', { name: /principal/i }).getByRole('link', { name: 'Cómo funciona' }).click();
+  await expect(page).toHaveURL(/\/#como-funciona$/);
+  await expect(page.getByRole('heading', { name: 'Cómo funciona' })).toBeInViewport();
 });
 
 test('precios: mismos planes y montos, tarjetas de igual altura', async ({ page }) => {
